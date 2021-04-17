@@ -6,7 +6,7 @@ import time
 # cap = cv2.VideoCapture(0)
 #dummy commit
 
-filename = "vids/test.mkv"
+filename = "vids/test.avi"
 
 # info
 print("Python:", sys.version)
@@ -21,8 +21,10 @@ try:
         raise NameError('Could not find file')
 except cv2.error as e:
     print("Error opening video: ", e)
+    exit()
 except Exception as e:
     print("Other error: ", e)
+    exit()
 else:
     print("everything ok I guess")
 
@@ -77,7 +79,7 @@ def vid(cap):
     while cap.isOpened():
         ret, frame = cap.read()
         cv2.imshow('original', frame)
-        if cv2.waitKey(delay-15) & 0xFF == ord('q'):
+        if cv2.waitKey(delay) & 0xFF == ord('q'):
             break
 
     cap.release()
