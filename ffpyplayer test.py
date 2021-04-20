@@ -15,7 +15,7 @@ from ffpyplayer.player import MediaPlayer
 import numpy as np
 import cv2
 
-filename = "vids/test.mkv"
+filename = "vids/test.avi"
 
 player = MediaPlayer(filename)
 val = ''
