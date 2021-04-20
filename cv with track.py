@@ -4,6 +4,7 @@ import cv2
 def nothing(emp):
     pass
 
+#dummy check commit author
 
 video = 'vids/test.avi'
 cv2.namedWindow('some video')
