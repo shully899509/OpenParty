@@ -3,8 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-.idea/OpenParty.iml
-.idea/misc.xml
+OpenParty.iml
+misc.xml
 
 
 # C extensions
