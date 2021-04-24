@@ -32,8 +32,8 @@ Dependente curente: <br>
     
     
   -- trebuie cautata o alternativa care sa proceseze video-ul si sa includa interfata de control (de cautat potentiale librarii)
-  
-  
+	-- instalat PyQt5
+	-- de instalat K-Lite codec pack: http://www.codecguide.com/download_k-lite_codec_pack_full.htm
   
   
   
@@ -46,5 +46,7 @@ Dependente curente: <br>
   [A Review on P2P Video Streaming](https://arxiv.org/ftp/arxiv/papers/1304/1304.1235.pdf) <br>
   [P2P Video Streaming Strategies based on Scalable Video Coding](https://www.elsevier.es/en-revista-journal-applied-research-technology-jart-81-articulo-p2p-video-streaming-strategies-based-S1665642315300109) <br>
   [Protocol de real-time streaming](https://p2psp.org/) <br>
-  https://github.com/justas-/PyPPSPP
+  [PyPPSPP](https://github.com/justas-/PyPPSPP) <br>
+  
+  [cod curent testat pe PyQt5](https://github.com/baoboa/pyqt5/blob/master/examples/multimediawidgets/player.py)
   
