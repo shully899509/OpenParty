@@ -496,7 +496,7 @@ class Player(QWidget):
 
     def open(self):
         fileNames, _ = QFileDialog.getOpenFileNames(self, "Open Files")
-        self.addToPlaylist(fgileNames)
+        self.addToPlaylist(fileNames)
 
     def addToPlaylist(self, fileNames):
         for name in fileNames:
