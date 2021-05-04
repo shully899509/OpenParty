@@ -43,15 +43,15 @@
 
 
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Q_ARG, QAbstractItemModel,
-        QFileInfo, qFuzzyCompare, QMetaObject, QModelIndex, QObject, Qt,
-        QThread, QTime, QUrl)
+                          QFileInfo, qFuzzyCompare, QMetaObject, QModelIndex, QObject, Qt,
+                          QThread, QTime, QUrl)
 from PyQt5.QtGui import QColor, qGray, QImage, QPainter, QPalette
 from PyQt5.QtMultimedia import (QAbstractVideoBuffer, QMediaContent,
-        QMediaMetaData, QMediaPlayer, QMediaPlaylist, QVideoFrame, QVideoProbe)
+                                QMediaMetaData, QMediaPlayer, QMediaPlaylist, QVideoFrame, QVideoProbe)
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtWidgets import (QApplication, QComboBox, QDialog, QFileDialog,
-        QFormLayout, QHBoxLayout, QLabel, QListView, QMessageBox, QPushButton,
-        QSizePolicy, QSlider, QStyle, QToolButton, QVBoxLayout, QWidget)
+                             QFormLayout, QHBoxLayout, QLabel, QListView, QMessageBox, QPushButton,
+                             QSizePolicy, QSlider, QStyle, QToolButton, QVBoxLayout, QWidget)
 
 
 class VideoWidget(QVideoWidget):
@@ -83,7 +83,6 @@ class VideoWidget(QVideoWidget):
 
 
 class PlaylistModel(QAbstractItemModel):
-
     Title, ColumnCount = range(2)
 
     def __init__(self, parent=None):
@@ -98,7 +97,8 @@ class PlaylistModel(QAbstractItemModel):
         return self.ColumnCount if not parent.isValid() else 0
 
     def index(self, row, column, parent=QModelIndex()):
-        return self.createIndex(row, column) if self.m_playlist is not None and not parent.isValid() and row >= 0 and row < self.m_playlist.mediaCount() and column >= 0 and column < self.ColumnCount else QModelIndex()
+        return self.createIndex(row,
+                                column) if self.m_playlist is not None and not parent.isValid() and row >= 0 and row < self.m_playlist.mediaCount() and column >= 0 and column < self.ColumnCount else QModelIndex()
 
     def parent(self, child):
         return QModelIndex()
@@ -119,10 +119,10 @@ class PlaylistModel(QAbstractItemModel):
     def setPlaylist(self, playlist):
         if self.m_playlist is not None:
             self.m_playlist.mediaAboutToBeInserted.disconnect(
-                    self.beginInsertItems)
+                self.beginInsertItems)
             self.m_playlist.mediaInserted.disconnect(self.endInsertItems)
             self.m_playlist.mediaAboutToBeRemoved.disconnect(
-                    self.beginRemoveItems)
+                self.beginRemoveItems)
             self.m_playlist.mediaRemoved.disconnect(self.endRemoveItems)
             self.m_playlist.mediaChanged.disconnect(self.changeItems)
 
@@ -131,10 +131,10 @@ class PlaylistModel(QAbstractItemModel):
 
         if self.m_playlist is not None:
             self.m_playlist.mediaAboutToBeInserted.connect(
-                    self.beginInsertItems)
+                self.beginInsertItems)
             self.m_playlist.mediaInserted.connect(self.endInsertItems)
             self.m_playlist.mediaAboutToBeRemoved.connect(
-                    self.beginRemoveItems)
+                self.beginRemoveItems)
             self.m_playlist.mediaRemoved.connect(self.endRemoveItems)
             self.m_playlist.mediaChanged.connect(self.changeItems)
 
@@ -154,11 +154,10 @@ class PlaylistModel(QAbstractItemModel):
 
     def changeItems(self, start, end):
         self.dataChanged.emit(self.index(start, 0),
-                self.index(end, self.ColumnCount))
+                              self.index(end, self.ColumnCount))
 
 
 class PlayerControls(QWidget):
-
     play = pyqtSignal()
     pause = pyqtSignal()
     stop = pyqtSignal()
@@ -183,18 +182,18 @@ class PlayerControls(QWidget):
 
         self.nextButton = QToolButton(clicked=self.next)
         self.nextButton.setIcon(
-                self.style().standardIcon(QStyle.SP_MediaSkipForward))
+            self.style().standardIcon(QStyle.SP_MediaSkipForward))
 
         self.previousButton = QToolButton(clicked=self.previous)
         self.previousButton.setIcon(
-                self.style().standardIcon(QStyle.SP_MediaSkipBackward))
+            self.style().standardIcon(QStyle.SP_MediaSkipBackward))
 
         self.muteButton = QToolButton(clicked=self.muteClicked)
         self.muteButton.setIcon(
-                self.style().standardIcon(QStyle.SP_MediaVolume))
+            self.style().standardIcon(QStyle.SP_MediaVolume))
 
         self.volumeSlider = QSlider(Qt.Horizontal,
-                sliderMoved=self.changeVolume)
+                                    sliderMoved=self.changeVolume)
         self.volumeSlider.setRange(0, 100)
 
         self.rateBox = QComboBox(activated=self.updateRate)
@@ -217,22 +216,22 @@ class PlayerControls(QWidget):
     def state(self):
         return self.playerState
 
-    def setState(self,state):
+    def setState(self, state):
         if state != self.playerState:
             self.playerState = state
 
             if state == QMediaPlayer.StoppedState:
                 self.stopButton.setEnabled(False)
                 self.playButton.setIcon(
-                        self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.style().standardIcon(QStyle.SP_MediaPlay))
             elif state == QMediaPlayer.PlayingState:
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
-                        self.style().standardIcon(QStyle.SP_MediaPause))
+                    self.style().standardIcon(QStyle.SP_MediaPause))
             elif state == QMediaPlayer.PausedState:
                 self.stopButton.setEnabled(True)
                 self.playButton.setIcon(
-                        self.style().standardIcon(QStyle.SP_MediaPlay))
+                    self.style().standardIcon(QStyle.SP_MediaPlay))
 
     def volume(self):
         return self.volumeSlider.value()
@@ -248,8 +247,8 @@ class PlayerControls(QWidget):
             self.playerMuted = muted
 
             self.muteButton.setIcon(
-                    self.style().standardIcon(
-                            QStyle.SP_MediaVolumeMuted if muted else QStyle.SP_MediaVolume))
+                self.style().standardIcon(
+                    QStyle.SP_MediaVolumeMuted if muted else QStyle.SP_MediaVolume))
 
     def playClicked(self):
         if self.playerState in (QMediaPlayer.StoppedState, QMediaPlayer.PausedState):
@@ -277,7 +276,6 @@ class PlayerControls(QWidget):
 
 
 class FrameProcessor(QObject):
-
     histogramReady = pyqtSignal(list)
 
     @pyqtSlot(QVideoFrame, int)
@@ -346,8 +344,8 @@ class HistogramWidget(QWidget):
 
         self.m_isBusy = True
         QMetaObject.invokeMethod(self.m_processor, 'processFrame',
-                Qt.QueuedConnection, Q_ARG(QVideoFrame, frame),
-                Q_ARG(int, self.m_levels))
+                                 Qt.QueuedConnection, Q_ARG(QVideoFrame, frame),
+                                 Q_ARG(int, self.m_levels))
 
     @pyqtSlot(list)
     def setHistogram(self, histogram):
@@ -360,7 +358,7 @@ class HistogramWidget(QWidget):
 
         if len(self.m_histogram) == 0:
             painter.fillRect(0, 0, self.width(), self.height(),
-                    QColor.fromRgb(0, 0, 0))
+                             QColor.fromRgb(0, 0, 0))
             return
 
         barWidth = self.width() / float(len(self.m_histogram))
@@ -369,14 +367,13 @@ class HistogramWidget(QWidget):
             h = value * self.height()
             # Draw the level.
             painter.fillRect(barWidth * i, self.height() - h,
-                    barWidth * (i + 1), self.height(), Qt.red)
+                             barWidth * (i + 1), self.height(), Qt.red)
             # Clear the rest of the control.
             painter.fillRect(barWidth * i, 0, barWidth * (i + 1),
-                    self.height() - h, Qt.black)
+                             self.height() - h, Qt.black)
 
 
 class Player(QWidget):
-
     fullScreenChanged = pyqtSignal(bool)
 
     def __init__(self, playlist, parent=None):
@@ -409,7 +406,7 @@ class Player(QWidget):
         self.playlistView = QListView()
         self.playlistView.setModel(self.playlistModel)
         self.playlistView.setCurrentIndex(
-                self.playlistModel.index(self.playlist.currentIndex(), 0))
+            self.playlistModel.index(self.playlist.currentIndex(), 0))
 
         self.playlistView.activated.connect(self.jump)
 
@@ -484,8 +481,8 @@ class Player(QWidget):
 
         if not self.player.isAvailable():
             QMessageBox.warning(self, "Service not available",
-                    "The QMediaPlayer object does not have a valid service.\n"
-                    "Please check the media service plugins are installed.")
+                                "The QMediaPlayer object does not have a valid service.\n"
+                                "Please check the media service plugins are installed.")
 
             controls.setEnabled(False)
             self.playlistView.setEnabled(False)
@@ -499,7 +496,7 @@ class Player(QWidget):
 
     def open(self):
         fileNames, _ = QFileDialog.getOpenFileNames(self, "Open Files")
-        self.addToPlaylist(fileNames)
+        self.addToPlaylist(fgileNames)
 
     def addToPlaylist(self, fileNames):
         for name in fileNames:
@@ -532,8 +529,8 @@ class Player(QWidget):
     def metaDataChanged(self):
         if self.player.isMetaDataAvailable():
             self.setTrackInfo("%s - %s" % (
-                    self.player.metaData(QMediaMetaData.AlbumArtist),
-                    self.player.metaData(QMediaMetaData.Title)))
+                self.player.metaData(QMediaMetaData.AlbumArtist),
+                self.player.metaData(QMediaMetaData.Title)))
 
     def previousClicked(self):
         # Go to the previous track if we are within the first 5 seconds of
@@ -550,7 +547,7 @@ class Player(QWidget):
 
     def playlistPositionChanged(self, position):
         self.playlistView.setCurrentIndex(
-                self.playlistModel.index(position, 0))
+            self.playlistModel.index(position, 0))
 
     def seek(self, seconds):
         self.player.setPosition(seconds * 1000)
@@ -581,17 +578,17 @@ class Player(QWidget):
     def videoAvailableChanged(self, available):
         if available:
             self.fullScreenButton.clicked.connect(
-                    self.videoWidget.setFullScreen)
+                self.videoWidget.setFullScreen)
             self.videoWidget.fullScreenChanged.connect(
-                    self.fullScreenButton.setChecked)
+                self.fullScreenButton.setChecked)
 
             if self.fullScreenButton.isChecked():
                 self.videoWidget.setFullScreen(True)
         else:
             self.fullScreenButton.clicked.disconnect(
-                    self.videoWidget.setFullScreen)
+                self.videoWidget.setFullScreen)
             self.videoWidget.fullScreenChanged.disconnect(
-                    self.fullScreenButton.setChecked)
+                self.fullScreenButton.setChecked)
 
             self.videoWidget.setFullScreen(False)
 
@@ -619,10 +616,10 @@ class Player(QWidget):
     def updateDurationInfo(self, currentInfo):
         duration = self.duration
         if currentInfo or duration:
-            currentTime = QTime((currentInfo/3600)%60, (currentInfo/60)%60,
-                    currentInfo%60, (currentInfo*1000)%1000)
-            totalTime = QTime((duration/3600)%60, (duration/60)%60,
-                    duration%60, (duration*1000)%1000);
+            currentTime = QTime((currentInfo / 3600) % 60, (currentInfo / 60) % 60,
+                                currentInfo % 60, (currentInfo * 1000) % 1000)
+            totalTime = QTime((duration / 3600) % 60, (duration / 60) % 60,
+                              duration % 60, (duration * 1000) % 1000)
 
             format = 'hh:mm:ss' if duration > 3600 else 'mm:ss'
             tStr = currentTime.toString(format) + " / " + totalTime.toString(format)
@@ -637,9 +634,9 @@ class Player(QWidget):
             brightnessSlider.setRange(-100, 100)
             brightnessSlider.setValue(self.videoWidget.brightness())
             brightnessSlider.sliderMoved.connect(
-                    self.videoWidget.setBrightness)
+                self.videoWidget.setBrightness)
             self.videoWidget.brightnessChanged.connect(
-                    brightnessSlider.setValue)
+                brightnessSlider.setValue)
 
             contrastSlider = QSlider(Qt.Horizontal)
             contrastSlider.setRange(-100, 100)
@@ -657,9 +654,9 @@ class Player(QWidget):
             saturationSlider.setRange(-100, 100)
             saturationSlider.setValue(self.videoWidget.saturation())
             saturationSlider.sliderMoved.connect(
-                    self.videoWidget.setSaturation)
+                self.videoWidget.setSaturation)
             self.videoWidget.saturationChanged.connect(
-                    saturationSlider.setValue)
+                saturationSlider.setValue)
 
             layout = QFormLayout()
             layout.addRow("Brightness", brightnessSlider)
@@ -680,7 +677,6 @@ class Player(QWidget):
 
 
 if __name__ == '__main__':
-
     import sys
 
     app = QApplication(sys.argv)
