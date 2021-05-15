@@ -48,5 +48,13 @@ Dependente curente: <br>
   [Protocol de real-time streaming](https://p2psp.org/) <br>
   [PyPPSPP](https://github.com/justas-/PyPPSPP) <br>
   
-  [cod curent testat pe PyQt5](https://github.com/baoboa/pyqt5/blob/master/examples/multimediawidgets/player.py)
+  [cod curent testat pe PyQt5](https://github.com/baoboa/pyqt5/blob/master/examples/multimediawidgets/player.py) <br>
+  
+UPDATE (15-05): cod curent testat pentru server client cu video si audio <br>
+requirements:  <br>
+	- opencv-contrib-python 4.5.2.52 <br>
+	- PyAudio (instalat Visual Studio C++ Build Tools si env de Python 3.6, versiuni mai sus nu functioneaza) <br>
+	- imutils <br>
+	
+fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, venv2 creat pentru Python 3.6	
   
