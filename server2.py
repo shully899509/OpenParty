@@ -9,6 +9,33 @@ import sys
 import queue
 import os
 
+
+
+def receive_message(client_socket):
+
+    try:
+        HEADER_LENGTH = 10
+        # Receive our "header" containing message length, it's size is defined and constant
+        message_header = client_socket.recv(HEADER_LENGTH)
+
+        # If we received no data, client gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
+        if not len(message_header):
+            return False
+
+        # Convert header to int value
+        message_length = int(message_header.decode('utf-8').strip())
+
+        # Return an object of message header and message data
+        return {'header': message_header, 'data': client_socket.recv(message_length)}
+
+    except:
+
+        # If we are here, client closed connection violently, for example by pressing ctrl+c on his script
+        # or just lost his connection
+        # socket.close() also invokes socket.shutdown(socket.SHUT_RDWR) what sends information about closing the socket (shutdown read/write)
+        # and that's also a cause when we receive an empty message
+        return False
+
 # For details visit pyshine.com
 q = queue.Queue(maxsize=10)
 
@@ -62,6 +89,7 @@ def video_stream():
     while True:
         msg, client_addr = server_socket.recvfrom(BUFF_SIZE)
         print('GOT connection from ', client_addr)
+        print('message is ', msg)
         WIDTH = 400
 
         while (True):
@@ -92,6 +120,35 @@ def video_stream():
                 os._exit(1)
                 TS = False
                 break
+            if key == ord('p'):
+                cv2.waitKey(-1)  # wait until any key is pressed
+
+
+
+            server_socket.setblocking(False) # big no no
+
+            # read_list = [server_socket]
+            # readable, writable, errored = select.select(read_list, [], [])
+            # for s in readable:
+            #     data, address = s1.recvfrom(MAX)
+            #     print(("socket %s received %s bytes from %s" % (s.getsockname(), len(data), address)))
+            #     s.sendto(b'Your data was %d bytes' % len(data), address)
+
+            # msg = receive_message(server_socket)
+            # if msg is False:
+            #     continue
+            # else:
+            #     print(msg)
+
+
+            # currently recvfrom is blocking the processing of the frames
+            # socket_address
+           # s.bind(server_address)
+           #  msg, client_addr = server_socket.recvfrom(BUFF_SIZE)
+           #
+           #  print('GOT connection from ', client_addr)
+           #  print('message is ', msg)
+           #  server_socket.sendto(b'received', client_addr)
 
 
 def audio_stream():
@@ -110,6 +167,11 @@ def audio_stream():
                     frames_per_buffer=CHUNK)
 
     client_socket, addr = s.accept()
+
+    # data = client_socket.recvfrom(1024)
+    # while data:
+    #     print(data)
+    #     data = conn.recvfrom(1024)
 
     while True:
         if client_socket:

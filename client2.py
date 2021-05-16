@@ -7,6 +7,10 @@ import time, os
 import base64
 import threading, wave, pyaudio, pickle, struct
 
+# workaround to start client after server when executing start commands in the same time
+time.sleep(1)
+
+
 # For details visit pyshine.com
 BUFF_SIZE = 65536
 
@@ -19,6 +23,7 @@ print(host_ip)
 port = 9688
 message = b'Hello'
 
+#client_socket.setblocking(False)
 client_socket.sendto(message, (host_ip, port))
 
 
@@ -40,6 +45,13 @@ def video_stream():
             client_socket.close()
             os._exit(1)
             break
+        if key == ord('p'):
+            print('trying to send a message')
+            message = b'pause pretty please'
+            client_socket.sendto(message, (host_ip, port))
+        # else:
+        #     message = b'do nothing'
+        #     client_socket.sendto(message, (host_ip, port))
 
         if cnt == frames_to_count:
             try:
