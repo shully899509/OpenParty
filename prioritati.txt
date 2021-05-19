@@ -1,7 +1,7 @@
 1. sincronizare play/pause intre server-client
 2. trackbar pentru selectare pozitie a videoului
 3. subtitrari
-4. conectare mai multi clienti la server !!
+4. conectare mai multi clienti la server !! (broadcast)
 5(o). chatbox
 6. documentatie cod
 
