@@ -38,8 +38,14 @@ def receive_message(client_socket):
 # For details visit pyshine.com
 q = queue.Queue(maxsize=10)
 
+
+# function called by trackbar, sets the next frame to be read
+def getFrame(frame_nr):
+    global vid
+    vid.set(cv2.CAP_PROP_POS_FRAMES, frame_nr)
+
 filename = 'vids\\test.avi'
-command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {}".format(filename, 'temp.wav')
+command = "-ffmpeg -i {} -ab 160k -ac 2 -ar 44100 vn {}".format(filename, 'temp.wav')
 os.system(command)
 
 BUFF_SIZE = 65536
@@ -79,13 +85,15 @@ def video_stream_gen():
     BREAK = True
     vid.release()
 
+#
+# server_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# server_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+# server_socket2.setblocking(False)
+# socket_address2 = ('localhost', 9998)
+# server_socket2.bind(socket_address2)
+# print('Listening for pause command at:', socket_address2)
 
-server_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
-server_socket2.setblocking(False)
-socket_address2 = ('localhost', 9998)
-server_socket2.bind(socket_address2)
-print('Listening for pause command at:', socket_address2)
+nr_of_frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
 
 def video_stream():
@@ -93,11 +101,14 @@ def video_stream():
     fps, st, frames_to_count, cnt = (0, 0, 1, 0)
     cv2.namedWindow('TRANSMITTING VIDEO')
     cv2.moveWindow('TRANSMITTING VIDEO', 10, 30)
+    cv2.createTrackbar("Frame", "TRANSMITTING VIDEO", 0, nr_of_frames, getFrame)
+
     while True:
         msg, client_addr = server_socket.recvfrom(BUFF_SIZE)
         print('GOT connection from ', client_addr)
         print('message is ', msg)
         WIDTH = 400
+
 
         while True:
             frame = q.get()
@@ -122,6 +133,9 @@ def video_stream():
             cnt += 1
 
             cv2.imshow('TRANSMITTING VIDEO', frame)
+            # cv2.setTrackbarPos("Frame", "TRANSMITTING VIDEO", int(vid.get(cv2.CAP_PROP_POS_FRAMES)))
+
+
             key = cv2.waitKey(int(1000 * TS)) & 0xFF
             if key == ord('q'):
                 os._exit(1)
@@ -148,16 +162,16 @@ def video_stream():
 
             # last thing i tried
 
-            try:
-                conn, addr = server_socket2.accept()
-                msg = conn.recvfrom(BUFF_SIZE)
-                print(msg)
-                if msg == b'do nothing':
-                    continue
-                conn.close()
-
-            except Exception as e:
-                print(e)
+            # try:
+            #     conn, addr = server_socket2.accept()
+            #     msg = conn.recvfrom(BUFF_SIZE)
+            #     print(msg)
+            #     if msg == b'do nothing':
+            #         continue
+            #     conn.close()
+            #
+            # except Exception as e:
+            #     print(e)
 
 
 

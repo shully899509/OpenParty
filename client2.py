@@ -18,7 +18,7 @@ BREAK = False
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
 host_name = socket.gethostname()
-host_ip = '192.168.100.120'  # socket.gethostbyname(host_name)
+host_ip = '192.168.100.30'  # socket.gethostbyname(host_name)
 print(host_ip)
 port = 9688
 message = b'Hello'
@@ -26,10 +26,10 @@ message = b'Hello'
 #client_socket.setblocking(False)
 client_socket.sendto(message, (host_ip, port))
 
-
-client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-client_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
-client_socket2.setblocking(False)
+#
+# client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# client_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+# client_socket2.setblocking(False)
 
 def video_stream():
     cv2.namedWindow('RECEIVING VIDEO')
@@ -52,10 +52,10 @@ def video_stream():
 
 
 
-        if key == ord('p'):
-            print('trying to send a message')
-            message = b'pause pretty please'
-            client_socket2.sendto(message, (host_ip, port+1))
+        # if key == ord('p'):
+        #     print('trying to send a message')
+        #     message = b'pause pretty please'
+        #     client_socket2.sendto(message, (host_ip, port+1))
 
             # HOST, PORT = "localhost", 9999
             # # Create a socket (SOCK_STREAM means a TCP socket)
@@ -67,10 +67,10 @@ def video_stream():
             #     # Receive data from the server and shut down
             #     received = str(sock.recv(1024), "utf-8")
             # print("Sent:     {}".format(message))
-        else:
-            print('im idle but still sending message')
-            message = b'do nothing'
-            client_socket2.sendto(message, (host_ip, port+1))
+        # else:
+        #     print('im idle but still sending message')
+        #     message = b'do nothing'
+        #     client_socket2.sendto(message, (host_ip, port+1))
 
             # HOST, PORT = "localhost", 9999
             # # Create a socket (SOCK_STREAM means a TCP socket)
