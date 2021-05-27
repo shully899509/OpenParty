@@ -10,31 +10,6 @@ import queue
 import os
 
 
-def receive_message(client_socket):
-    try:
-        HEADER_LENGTH = 10
-        # Receive our "header" containing message length, it's size is defined and constant
-        message_header = client_socket.recv(HEADER_LENGTH)
-
-        # If we received no data, client gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
-        if not len(message_header):
-            return False
-
-        # Convert header to int value
-        message_length = int(message_header.decode('utf-8').strip())
-
-        # Return an object of message header and message data
-        return {'header': message_header, 'data': client_socket.recv(message_length)}
-
-    except:
-
-        # If we are here, client closed connection violently, for example by pressing ctrl+c on his script
-        # or just lost his connection
-        # socket.close() also invokes socket.shutdown(socket.SHUT_RDWR) what sends information about closing the socket (shutdown read/write)
-        # and that's also a cause when we receive an empty message
-        return False
-
-
 # For details visit pyshine.com
 q = queue.Queue(maxsize=10)
 
@@ -44,8 +19,8 @@ def getFrame(frame_nr):
     global vid
     vid.set(cv2.CAP_PROP_POS_FRAMES, frame_nr)
 
-filename = 'vids\\test.avi'
-command = "-ffmpeg -i {} -ab 160k -ac 2 -ar 44100 vn {}".format(filename, 'temp.wav')
+filename = 'vids\\monty.mp4'
+command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(filename, 'temp.wav')
 os.system(command)
 
 BUFF_SIZE = 65536
@@ -79,7 +54,8 @@ def video_stream_gen():
             _, frame = vid.read()
             frame = imutils.resize(frame, width=WIDTH)
             q.put(frame)
-        except:
+        except Exception as e:
+            print(e)
             os._exit(1)
     print('Player closed')
     BREAK = True
@@ -128,12 +104,12 @@ def video_stream():
                         TS -= 0.001
                     else:
                         pass
-                except:
-                    pass
+                except Exception as e:
+                    print(e)
             cnt += 1
 
             cv2.imshow('TRANSMITTING VIDEO', frame)
-            # cv2.setTrackbarPos("Frame", "TRANSMITTING VIDEO", int(vid.get(cv2.CAP_PROP_POS_FRAMES)))
+            cv2.setTrackbarPos("Frame", "TRANSMITTING VIDEO", int(vid.get(cv2.CAP_PROP_POS_FRAMES)))
 
 
             key = cv2.waitKey(int(1000 * TS)) & 0xFF
@@ -144,18 +120,6 @@ def video_stream():
             if key == ord('p'):
                 cv2.waitKey(-1)  # wait until any key is pressed
 
-            # read_list = [server_socket]
-            # readable, writable, errored = select.select(read_list, [], [])
-            # for s in readable:
-            #     data, address = s1.recvfrom(MAX)
-            #     print(("socket %s received %s bytes from %s" % (s.getsockname(), len(data), address)))
-            #     s.sendto(b'Your data was %d bytes' % len(data), address)
-
-            # msg = receive_message(server_socket2)
-            # if msg is False:
-            #     continue
-            # else:
-            #     print(msg)
 
 
 
@@ -223,7 +187,188 @@ def video_stream():
             #     # interrupt the program with Ctrl-C
             #     server.serve_forever()
 
+from pynput import keyboard
+
+paused = False  # global to track if the audio is paused
+
+def local_audio():
+    print('pornit local')
+
+    wf = wave.open("temp.wav", 'rb')
+    CHUNK = 1024
+    p = pyaudio.PyAudio()
+
+    def on_press(key):
+        global paused
+        print(key)
+        if key == keyboard.Key.space:
+            if stream.is_stopped():  # time to play audio
+                print('play pressed')
+                stream.start_stream()
+                paused = False
+                return False
+            elif stream.is_active():  # time to pause audio
+                print('pause pressed')
+                stream.stop_stream()
+                paused = True
+                return False
+        return False
+
+    # define callback
+    def callback(in_data, frame_count, time_info, status):
+        data = wf.readframes(frame_count)
+        return (data, pyaudio.paContinue)
+
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True,
+                    frames_per_buffer=CHUNK,
+                    stream_callback=callback)
+
+    # start the stream
+    stream.start_stream()
+
+    while stream.is_active() or paused == True:
+        with keyboard.Listener(on_press=on_press) as listener:
+            listener.join()
+        time.sleep(0.1)
+
+    # stop stream
+    stream.stop_stream()
+    stream.close()
+    wf.close()
+
+    # close PyAudio
+    p.terminate()
+
+import select
+def receive_command():
+    HEADER_LENGTH = 10
+    IP = "127.0.0.1"
+    PORT = 1234
+    BUFF_SIZE = 65536
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server_socket.bind((IP, PORT))
+
+    # This makes server listen to new connections
+    server_socket.listen()
+
+    # List of sockets for select.select()
+    sockets_list = [server_socket]
+    clients = {}
+    print(f'Listening for connections on {IP}:{PORT}...')
+
+    # Handles message receiving
+    def receive_message(client_socket):
+
+        try:
+
+            # Receive our "header" containing message length, it's size is defined and constant
+            message_header = client_socket.recv(HEADER_LENGTH)
+
+            # If we received no data, client gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
+            if not len(message_header):
+                return False
+
+            # Convert header to int value
+            message_length = int(message_header.decode('utf-8').strip())
+
+            # Return an object of message header and message data
+            return {'header': message_header, 'data': client_socket.recv(message_length)}
+
+        except:
+
+            # If we are here, client closed connection violently, for example by pressing ctrl+c on his script
+            # or just lost his connection
+            # socket.close() also invokes socket.shutdown(socket.SHUT_RDWR) what sends information about closing the socket (shutdown read/write)
+            # and that's also a cause when we receive an empty message
+            return False
+
+    while True:
+
+        # Calls Unix select() system call or Windows select() WinSock call with three parameters:
+        #   - rlist - sockets to be monitored for incoming data
+        #   - wlist - sockets for data to be send to (checks if for example buffers are not full and socket is ready to send some data)
+        #   - xlist - sockets to be monitored for exceptions (we want to monitor all sockets for errors, so we can use rlist)
+        # Returns lists:
+        #   - reading - sockets we received some data on (that way we don't have to check sockets manually)
+        #   - writing - sockets ready for data to be send thru them
+        #   - errors  - sockets with some exceptions
+        # This is a blocking call, code execution will "wait" here and "get" notified in case any action should be taken
+        read_sockets, _, exception_sockets = select.select(sockets_list, [], sockets_list)
+
+        # Iterate over notified sockets
+        for notified_socket in read_sockets:
+
+            # If notified socket is a server socket - new connection, accept it
+            if notified_socket == server_socket:
+
+                # Accept new connection
+                # That gives us new socket - client socket, connected to this given client only, it's unique for that client
+                # The other returned object is ip/port set
+                client_socket, client_address = server_socket.accept()
+
+                # Client should send his name right away, receive it
+                user = receive_message(client_socket)
+
+                # If False - client disconnected before he sent his name
+                if user is False:
+                    continue
+
+                # Add accepted socket to select.select() list
+                sockets_list.append(client_socket)
+
+                # Also save username and username header
+                clients[client_socket] = user
+
+                print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
+                                                                                user['data'].decode('utf-8')))
+
+            # Else existing socket is sending a message
+            else:
+
+                # Receive message
+                message = receive_message(notified_socket)
+
+                # If False, client disconnected, cleanup
+                if message is False:
+                    print('Closed connection from: {}'.format(clients[notified_socket]['data'].decode('utf-8')))
+
+                    # Remove from list for socket.socket()
+                    sockets_list.remove(notified_socket)
+
+                    # Remove from our list of users
+                    del clients[notified_socket]
+
+                    continue
+
+                # Get user by notified socket, so we will know who sent the message
+                user = clients[notified_socket]
+
+                print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
+
+                # Iterate over connected clients and broadcast message
+                for client_socket in clients:
+
+                    # But don't sent it to sender
+                    if client_socket != notified_socket:
+                        # Send user and message (both with their headers)
+                        # We are reusing here message header sent by sender, and saved username header send by user when he connected
+                        client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+
+        # It's not really necessary to have this, but will handle some socket exceptions just in case
+        for notified_socket in exception_sockets:
+            # Remove from list for socket.socket()
+            sockets_list.remove(notified_socket)
+
+            # Remove from our list of users
+            del clients[notified_socket]
+
 def audio_stream():
+    print('pornit client')
+
     s = socket.socket()
     s.bind((host_ip, (port - 1)))
 
@@ -238,12 +383,8 @@ def audio_stream():
                     input=True,
                     frames_per_buffer=CHUNK)
 
-    client_socket, addr = s.accept()
 
-    # data = client_socket.recvfrom(1024)
-    # while data:
-    #     print(data)
-    #     data = conn.recvfrom(1024)
+    client_socket, addr = s.accept()
 
     while True:
         if client_socket:
@@ -256,7 +397,9 @@ def audio_stream():
 
 from concurrent.futures import ThreadPoolExecutor
 
-with ThreadPoolExecutor(max_workers=3) as executor:
+with ThreadPoolExecutor(max_workers=4) as executor:
     executor.submit(audio_stream)
     executor.submit(video_stream_gen)
     executor.submit(video_stream)
+    executor.submit(receive_command)
+    # executor.submit(local_audio)

@@ -1,9 +1,24 @@
-1. sincronizare play/pause intre server-client
-2. trackbar pentru selectare pozitie a videoului
-3. subtitrari
+(maybe done) 2. trackbar pentru selectare pozitie a videoului
+
+- audio si video decalat (audio inaintea videoului)
+- audio numai de la client (crash cand rulez audio local si client in acelasi timp)
+(partially done with chatbox in TCP sockets) - trimis comenzi de la client la server (play/pause si pozitie video)
+- buton de play/pause la interfata
+
+
+- full screen/minimize on double click
+- control volum sunet
+
 4. conectare mai multi clienti la server !! (broadcast)
-5(o). chatbox
+
+
+
+
+3. subtitrari
 6. documentatie cod
 
 
-- 2 servere 1 pentru rulat, 1 pentru pauza
+
+
+
+5(o). chatbox

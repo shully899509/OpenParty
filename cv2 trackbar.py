@@ -12,7 +12,7 @@ def setSpeed(val):
     playSpeed = max(val,1)
 
 # open video
-video = cv2.VideoCapture("vids\\test.avi")
+video = cv2.VideoCapture("vids\\monty.mp4")
 # get total number of frames
 nr_of_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
 # create display window

@@ -55,6 +55,7 @@ requirements:  <br>
 	- opencv-contrib-python 4.5.2.52 <br>
 	- PyAudio (instalat Visual Studio C++ Build Tools si env de Python 3.6, versiuni mai sus nu functioneaza) <br>
 	- imutils <br>
+	- [extern] ffmpeg pentru a extrage partea audio
 	
-fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, venv2 creat pentru Python 3.6	
+fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, venv3 creat pentru Python 3.6	 
   
