@@ -12,32 +12,34 @@ import threading, wave, pyaudio, pickle, struct
 time.sleep(1)
 
 
-# For details visit pyshine.com
-BUFF_SIZE = 65536
 
-BREAK = False
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
-host_name = socket.gethostname()
-host_ip = '26.227.64.72'  # socket.gethostbyname(host_name)
-print(host_ip)
-port = 9688
-message = b'Hello'
 
-#client_socket.setblocking(False)
-client_socket.sendto(message, (host_ip, port))
-
-#
-# client_socket2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-# client_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
-# client_socket2.setblocking(False)
 
 def video_stream():
+
+
+
+    BUFF_SIZE = 65536
+
+    BREAK = False
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+
+    socket_address = ('127.0.0.1', 9689)
+    client_socket.bind(socket_address)
+
+    host_ip = '127.0.0.1'  # socket.gethostbyname(host_name)
+    print(host_ip)
+    port = 9688
+
     cv2.namedWindow('RECEIVING VIDEO')
     cv2.moveWindow('RECEIVING VIDEO', 10, 360)
     fps, st, frames_to_count, cnt = (0, 0, 20, 0)
+
     while True:
+        # print('receiving frame')
         packet, _ = client_socket.recvfrom(BUFF_SIZE)
+        # print('received frame')
         data = base64.b64decode(packet, ' /')
         npdata = np.fromstring(data, dtype=np.uint8)
 
@@ -50,39 +52,6 @@ def video_stream():
             client_socket.close()
             os._exit(1)
             break
-
-
-
-        # if key == ord('p'):
-        #     print('trying to send a message')
-        #     message = b'pause pretty please'
-        #     client_socket2.sendto(message, (host_ip, port+1))
-
-            # HOST, PORT = "localhost", 9999
-            # # Create a socket (SOCK_STREAM means a TCP socket)
-            # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            #     # Connect to server and send data
-            #     sock.connect((HOST, PORT))
-            #     sock.sendall(bytes(message + "\n", "utf-8"))
-            #
-            #     # Receive data from the server and shut down
-            #     received = str(sock.recv(1024), "utf-8")
-            # print("Sent:     {}".format(message))
-        # else:
-        #     print('im idle but still sending message')
-        #     message = b'do nothing'
-        #     client_socket2.sendto(message, (host_ip, port+1))
-
-            # HOST, PORT = "localhost", 9999
-            # # Create a socket (SOCK_STREAM means a TCP socket)
-            # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            #     # Connect to server and send data
-            #     sock.connect((HOST, PORT))
-            #     sock.sendall(bytes(message + "\n", "utf-8"))
-            #
-            #     # Receive data from the server and shut down
-            #     received = str(sock.recv(1024), "utf-8")
-            # print("Sent:     {}".format(message))
 
         if cnt == frames_to_count:
             try:
@@ -166,6 +135,8 @@ def send_command():
     username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
     client_socket.send(username_header + username)
 
+    # video_stream()
+
     while True:
 
         # Wait for user to input a message
@@ -227,6 +198,6 @@ def send_command():
 from concurrent.futures import ThreadPoolExecutor
 
 with ThreadPoolExecutor(max_workers=3) as executor:
-    executor.submit(audio_stream)
+    # executor.submit(audio_stream)
     executor.submit(video_stream)
     executor.submit(send_command)

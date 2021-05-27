@@ -8,6 +8,7 @@ import threading, wave, pyaudio, pickle, struct
 import sys
 import queue
 import os
+from _thread import *
 
 
 # For details visit pyshine.com
@@ -23,17 +24,19 @@ filename = 'vids\\monty.mp4'
 command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(filename, 'temp.wav')
 os.system(command)
 
-BUFF_SIZE = 65536
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
-host_name = socket.gethostname()
-# host_ip = '192.168.1.21'
-host_ip = socket.gethostbyname(host_name)
-print(host_ip)
-port = 9688
-socket_address = (host_ip, port)
-server_socket.bind(socket_address)
-print('Listening at:', socket_address)
+
+def multi_threaded_client(connection):
+    connection.send(str.encode('Server is working:'))
+    while True:
+        data = connection.recv(2048)
+        response = 'Server message: ' + data.decode('utf-8')
+        if not data:
+            break
+        connection.sendall(str.encode(response))
+    connection.close()
+
+
+
 
 vid = cv2.VideoCapture(filename)
 FPS = vid.get(cv2.CAP_PROP_FPS)
@@ -45,6 +48,8 @@ totalNoFrames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 durationInSeconds = float(totalNoFrames) / float(FPS)
 d = vid.get(cv2.CAP_PROP_POS_MSEC)
 print(durationInSeconds, d)
+
+
 
 
 def video_stream_gen():
@@ -61,36 +66,52 @@ def video_stream_gen():
     BREAK = True
     vid.release()
 
-#
-# server_socket2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# server_socket2.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
-# server_socket2.setblocking(False)
-# socket_address2 = ('localhost', 9998)
-# server_socket2.bind(socket_address2)
-# print('Listening for pause command at:', socket_address2)
-
-nr_of_frames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
-
+list_of_clients = []
 
 def video_stream():
-    global TS
-    fps, st, frames_to_count, cnt = (0, 0, 1, 0)
-    cv2.namedWindow('TRANSMITTING VIDEO')
-    cv2.moveWindow('TRANSMITTING VIDEO', 10, 30)
-    cv2.createTrackbar("Frame", "TRANSMITTING VIDEO", 0, nr_of_frames, getFrame)
+
+
+
+    try:
+        BUFF_SIZE = 65536
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+
+        host_name = socket.gethostname()
+        # host_ip = '192.168.1.21'
+        host_ip = socket.gethostbyname(host_name)
+        print('ip connect: ', host_ip)
+
+        host_ip = '127.0.0.1'
+
+        print(host_ip)
+        port = 9688
+        socket_address = (host_ip, port)
+        # server_socket.bind(socket_address)
+        print('Listening at:', socket_address)
+
+        global TS
+        fps, st, frames_to_count, cnt = (0, 0, 1, 0)
+        cv2.namedWindow('TRANSMITTING VIDEO')
+        cv2.moveWindow('TRANSMITTING VIDEO', 10, 30)
+        cv2.createTrackbar("Frame", "TRANSMITTING VIDEO", 0, totalNoFrames, getFrame)
+    except Exception as e:
+        print(e)
 
     while True:
-        msg, client_addr = server_socket.recvfrom(BUFF_SIZE)
-        print('GOT connection from ', client_addr)
-        print('message is ', msg)
+
         WIDTH = 400
 
 
         while True:
+            # print('frame sending')
             frame = q.get()
             encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             message = base64.b64encode(buffer)
-            server_socket.sendto(message, client_addr)
+
+            client_addr_new = ('127.0.0.1', 9689)
+            server_socket.sendto(message, client_addr_new)
+            # print('frame sent')
             frame = cv2.putText(frame, 'FPS: ' + str(round(fps, 1)), (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
                                 (0, 0, 255), 2)
             if cnt == frames_to_count:
@@ -121,76 +142,8 @@ def video_stream():
                 cv2.waitKey(-1)  # wait until any key is pressed
 
 
-
-
-
-            # last thing i tried
-
-            # try:
-            #     conn, addr = server_socket2.accept()
-            #     msg = conn.recvfrom(BUFF_SIZE)
-            #     print(msg)
-            #     if msg == b'do nothing':
-            #         continue
-            #     conn.close()
-            #
-            # except Exception as e:
-            #     print(e)
-
-
-
-
-
-            # if msg is None:
-            #     continue
-            # else:
-            #     print(client_addr)
-
-            # currently recvfrom is blocking the processing of the frames
-            # socket_address
-
-            # s.bind(server_address)
-            #  msg, client_addr = server_socket.recvfrom(BUFF_SIZE)
-            #
-            #  print('GOT connection from ', client_addr)
-            #  print('message is ', msg)
-            #  server_socket.sendto(b'received', client_addr)
-            #
-
-
-
-
-            #
-            # import socketserver
-            #
-            # class MyTCPHandler(socketserver.BaseRequestHandler):
-            #     """
-            #     The request handler class for our server.
-            #
-            #     It is instantiated once per connection to the server, and must
-            #     override the handle() method to implement communication to the
-            #     client.
-            #     """
-            #
-            #     def handle(self):
-            #         # self.request is the TCP socket connected to the client
-            #         self.data = self.request.recv(1024).strip()
-            #         print("{} wrote:".format(self.client_address[0]))
-            #         print(self.data)
-            #         # just send back the same data, but upper-cased
-            #         self.request.sendall(self.data.upper())
-            #
-            # HOST, PORT = "localhost", 9999
-            # # Create the server, binding to localhost on port 9999
-            # with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
-            #     # Activate the server; this will keep running until you
-            #     # interrupt the program with Ctrl-C
-            #     server.serve_forever()
-
 from pynput import keyboard
-
 paused = False  # global to track if the audio is paused
-
 def local_audio():
     print('pornit local')
 
@@ -247,7 +200,7 @@ def receive_command():
     HEADER_LENGTH = 10
     IP = "127.0.0.1"
     PORT = 1234
-    BUFF_SIZE = 65536
+    server_port = 9688
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((IP, PORT))
@@ -326,6 +279,12 @@ def receive_command():
                 print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
                                                                                 user['data'].decode('utf-8')))
 
+
+
+
+                # video_stream()
+
+
             # Else existing socket is sending a message
             else:
 
@@ -398,7 +357,7 @@ def audio_stream():
 from concurrent.futures import ThreadPoolExecutor
 
 with ThreadPoolExecutor(max_workers=4) as executor:
-    executor.submit(audio_stream)
+    # executor.submit(audio_stream)
     executor.submit(video_stream_gen)
     executor.submit(video_stream)
     executor.submit(receive_command)
