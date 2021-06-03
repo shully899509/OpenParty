@@ -11,30 +11,49 @@ import threading, wave, pyaudio, pickle, struct
 # workaround to start client after server when executing start commands in the same time
 time.sleep(1)
 
-
-
-
+global fullscreen
+fullscreen = False
 
 def video_stream():
 
+    try:
+        BUFF_SIZE = 65536
 
+        BREAK = False
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
 
-    BUFF_SIZE = 65536
+        socket_address = ('192.168.0.106', 9689)
+        client_socket.bind(socket_address)
 
-    BREAK = False
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, BUFF_SIZE)
+        # port = 9688
 
-    socket_address = ('127.0.0.1', 9689)
-    client_socket.bind(socket_address)
+        cv2.namedWindow('RECEIVING VIDEO', cv2.WINDOW_NORMAL)
+        cv2.moveWindow('RECEIVING VIDEO', 10, 360)
+        fps, st, frames_to_count, cnt = (0, 0, 20, 0)
 
-    host_ip = '127.0.0.1'  # socket.gethostbyname(host_name)
-    print(host_ip)
-    port = 9688
+        cv2.resizeWindow('RECEIVING VIDEO', 640, 480)
 
-    cv2.namedWindow('RECEIVING VIDEO')
-    cv2.moveWindow('RECEIVING VIDEO', 10, 360)
-    fps, st, frames_to_count, cnt = (0, 0, 20, 0)
+        def left_click_event(event, x, y, flags, param):
+            global fullscreen
+            if event == cv2.EVENT_LBUTTONDBLCLK:
+                if not fullscreen:
+                    try:
+                        cv2.setWindowProperty('RECEIVING VIDEO', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                        fullscreen = True
+                    except Exception as e:
+                        print(e)
+                else:
+                    try:
+                        cv2.setWindowProperty('RECEIVING VIDEO', cv2.WINDOW_NORMAL, cv2.WINDOW_NORMAL)
+                        fullscreen = False
+                    except Exception as e:
+                        print(e)
+                print('fullscreen is ', fullscreen)
+
+        cv2.setMouseCallback('RECEIVING VIDEO', left_click_event)
+    except Exception as e:
+        print(e)
 
     while True:
         # print('receiving frame')
@@ -77,7 +96,7 @@ def audio_stream():
 
     # create socket
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket_address = (host_ip, port - 1)
+    socket_address = ('192.168.0.106', 9689 - 1)
     print('server listening at', socket_address)
     client_socket.connect(socket_address)
     print("CLIENT CONNECTED TO", socket_address)
@@ -104,17 +123,18 @@ def audio_stream():
             break
 
     client_socket.close()
-    print('Audio closed', BREAK)
+    print('Audio closed')
     os._exit(1)
 
 
 import select
 import errno
 
+
 def send_command():
     HEADER_LENGTH = 10
 
-    IP = "127.0.0.1"
+    IP = "192.168.0.106"
     PORT = 1234
     my_username = input("Username: ")
 
@@ -135,8 +155,6 @@ def send_command():
     username_header = f"{len(username):<{HEADER_LENGTH}}".encode('utf-8')
     client_socket.send(username_header + username)
 
-    # video_stream()
-
     while True:
 
         # Wait for user to input a message
@@ -144,7 +162,6 @@ def send_command():
 
         # If message is not empty - send it
         if message:
-
             # Encode message to bytes, prepare header and convert to bytes, like for username above, then send
             message = message.encode('utf-8')
             message_header = f"{len(message):<{HEADER_LENGTH}}".encode('utf-8')
@@ -194,10 +211,9 @@ def send_command():
             sys.exit()
 
 
-
 from concurrent.futures import ThreadPoolExecutor
 
 with ThreadPoolExecutor(max_workers=3) as executor:
-    # executor.submit(audio_stream)
+    executor.submit(audio_stream)
     executor.submit(video_stream)
     executor.submit(send_command)

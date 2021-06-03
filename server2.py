@@ -9,37 +9,85 @@ import sys
 import queue
 import os
 from _thread import *
+from datetime import timedelta
+
+#slider imports
+import sys
+from PyQt5.QtWidgets import (QLineEdit, QSlider, QPushButton, QVBoxLayout, QApplication, QWidget)
+from PyQt5.QtCore import Qt
+#
+# class Window(QWidget):
+#
+#     def __init__(self):
+#         super().__init__()
+#
+#         self.init_ui()
+#
+#     def init_ui(self):
+#         self.s1 = QSlider(Qt.Horizontal)
+#         self.s1.setMinimum(1)
+#         self.s1.setMaximum(99)
+#         self.s1.setValue(25)
+#         self.s1.setTickInterval(10)
+#         self.s1.setTickPosition(QSlider.TicksBelow)
+#
+#         v_box = QVBoxLayout()
+#         v_box.addWidget(self.s1)
+#
+#         self.setLayout(v_box)
+#         self.setWindowTitle('PyQt5 Lesson 8')
+#
+#         self.s1.valueChanged.connect(self.v_change)
+#
+#         self.show()
+#
+#     # def btn_clk(self, b, string):
+#     #     if b.text() == 'Print':
+#     #         print(self.le.text())
+#     #     else:
+#     #         self.le.clear()
+#     #     print(string)
+#     #
+#     def v_change(self):
+#         global vid
+#         vid.set(cv2.CAP_PROP_POS_FRAMES, self.s1.value())
+#         print('set frame to: ', self.s1.value())
+#         # my_value = str(self.s1.value())
+#         # self.le.setText(my_value)
+
+
+# def init_slider():
+#     app = QApplication(sys.argv)
+#     a_window = Window()
+#     sys.exit(app.exec_())
+
+
+def frame_to_timestamp(frame, FPS):
+    return timedelta(seconds=(frame / FPS))
+
 
 
 # For details visit pyshine.com
 q = queue.Queue(maxsize=10)
 
+global fullscreen
+fullscreen = False
 
 # function called by trackbar, sets the next frame to be read
 def getFrame(frame_nr):
     global vid
     vid.set(cv2.CAP_PROP_POS_FRAMES, frame_nr)
 
-filename = 'vids\\monty.mp4'
+
+filename = 'vids\\surf.mp4'
 command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(filename, 'temp.wav')
 os.system(command)
 
-
-def multi_threaded_client(connection):
-    connection.send(str.encode('Server is working:'))
-    while True:
-        data = connection.recv(2048)
-        response = 'Server message: ' + data.decode('utf-8')
-        if not data:
-            break
-        connection.sendall(str.encode(response))
-    connection.close()
-
-
-
+list_of_clients = []
 
 vid = cv2.VideoCapture(filename)
 FPS = vid.get(cv2.CAP_PROP_FPS)
+print('FPS is: ', FPS)
 global TS
 TS = (0.5 / FPS)
 BREAK = False
@@ -49,10 +97,18 @@ durationInSeconds = float(totalNoFrames) / float(FPS)
 d = vid.get(cv2.CAP_PROP_POS_MSEC)
 print(durationInSeconds, d)
 
+h = socket.gethostname()
+hh = socket.gethostbyname(h)
 
+
+total_time = frame_to_timestamp(totalNoFrames, FPS)
+print('Total time is: ', total_time)
+
+print('server ip is: ', hh)
 
 
 def video_stream_gen():
+    print('start gen')
     WIDTH = 400
     while (vid.isOpened()):
         try:
@@ -66,12 +122,8 @@ def video_stream_gen():
     BREAK = True
     vid.release()
 
-list_of_clients = []
 
 def video_stream():
-
-
-
     try:
         BUFF_SIZE = 65536
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -80,9 +132,9 @@ def video_stream():
         host_name = socket.gethostname()
         # host_ip = '192.168.1.21'
         host_ip = socket.gethostbyname(host_name)
-        print('ip connect: ', host_ip)
+        print('udp ip connect: ', host_ip)
 
-        host_ip = '127.0.0.1'
+        # host_ip = '127.0.0.1'
 
         print(host_ip)
         port = 9688
@@ -92,58 +144,101 @@ def video_stream():
 
         global TS
         fps, st, frames_to_count, cnt = (0, 0, 1, 0)
-        cv2.namedWindow('TRANSMITTING VIDEO')
+        cv2.namedWindow('TRANSMITTING VIDEO', cv2.WINDOW_NORMAL)
         cv2.moveWindow('TRANSMITTING VIDEO', 10, 30)
+        cv2.resizeWindow('TRANSMITTING VIDEO', 640, 480)
+
+        def left_click_event(event, x, y, flags, param):
+            global fullscreen
+            if event == cv2.EVENT_LBUTTONDBLCLK:
+                if not fullscreen:
+                    try:
+                        cv2.setWindowProperty("TRANSMITTING VIDEO", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+                        fullscreen = True
+                    except Exception as e:
+                        print(e)
+                else:
+                    try:
+                        cv2.setWindowProperty("TRANSMITTING VIDEO", cv2.WINDOW_NORMAL, cv2.WINDOW_NORMAL)
+                        fullscreen = False
+                    except Exception as e:
+                        print(e)
+                print('fullscreen is ', fullscreen)
+
+        cv2.setMouseCallback('TRANSMITTING VIDEO', left_click_event)
         cv2.createTrackbar("Frame", "TRANSMITTING VIDEO", 0, totalNoFrames, getFrame)
     except Exception as e:
+        print('exception caught: ')
         print(e)
 
     while True:
-
         WIDTH = 400
-
-
         while True:
-            # print('frame sending')
-            frame = q.get()
-            encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
-            message = base64.b64encode(buffer)
+           try:
+                # print('frame sending')
+                frame = q.get()
+                encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                message = base64.b64encode(buffer)
 
-            client_addr_new = ('127.0.0.1', 9689)
-            server_socket.sendto(message, client_addr_new)
-            # print('frame sent')
-            frame = cv2.putText(frame, 'FPS: ' + str(round(fps, 1)), (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
-                                (0, 0, 255), 2)
-            if cnt == frames_to_count:
-                try:
-                    fps = (frames_to_count / (time.time() - st))
-                    st = time.time()
-                    cnt = 0
-                    if fps > FPS:
-                        TS += 0.001
-                    elif fps < FPS:
-                        TS -= 0.001
-                    else:
-                        pass
-                except Exception as e:
-                    print(e)
-            cnt += 1
+                client_addr_new1 = ('192.168.0.106', 9689)  # udp ip to local client
+                # client_addr_new2 = ('26.14.157.60', 9689) #udp ip to other clients
+                client_addr_new_all = [client_addr_new1
+                                       # , client_addr_new2
+                                       ]
 
-            cv2.imshow('TRANSMITTING VIDEO', frame)
-            cv2.setTrackbarPos("Frame", "TRANSMITTING VIDEO", int(vid.get(cv2.CAP_PROP_POS_FRAMES)))
+                for client_addr_new in client_addr_new_all:
+                    server_socket.sendto(message, client_addr_new)
+                # print('frame sent')
+                current_frame = int(vid.get(cv2.CAP_PROP_POS_FRAMES))
+                frame = cv2.putText(frame, 'FPS: ' + str(round(fps, 1)), (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                                    (0, 0, 255), 2)
+                frame = cv2.putText(frame, 'TIME: ' + str(frame_to_timestamp(current_frame, FPS)), (10, 60),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7,
+                                    (0, 0, 255), 2)
+                if cnt == frames_to_count:
+                    try:
+                        fps = (frames_to_count / (time.time() - st))
+                        # print(fps, FPS)
+                        st = time.time()
+                        cnt = 0
+                        if fps > FPS:
+                            TS += 0.001
+                        elif fps < FPS:
+                            TS -= 0.001
+                        else:
+                            pass
+                    except Exception as e:
+                        print(e)
+                cnt += 1
+
+                cv2.imshow('TRANSMITTING VIDEO', frame)
+
+                ## functie foarte costisitoare - nu mai proceseaza video la timp
+                ## nu poate mentine framerate constant si ajunge <0 (se opreste)
+                # if current_frame % 80 == 0:
+                #     cv2.setTrackbarPos("Frame", "TRANSMITTING VIDEO", current_frame)
+
+                # cv2.setTrackbarPos("Frame", "TRANSMITTING VIDEO", current_frame)
 
 
-            key = cv2.waitKey(int(1000 * TS)) & 0xFF
-            if key == ord('q'):
-                os._exit(1)
-                TS = False
-                break
-            if key == ord('p'):
-                cv2.waitKey(-1)  # wait until any key is pressed
+                #print('time is ', frame_to_timestamp(current_frame, FPS))
+
+                key = cv2.waitKey(int(1000 * TS)) & 0xFF
+                if key == ord('q'):
+                    os._exit(1)
+                    TS = False
+                    break
+                if key == ord('p'):
+                    cv2.waitKey(-1)  # wait until any key is pressed
+           except Exception as e:
+               print('error in displaying frame:', e)
 
 
 from pynput import keyboard
+
 paused = False  # global to track if the audio is paused
+
+
 def local_audio():
     print('pornit local')
 
@@ -195,12 +290,15 @@ def local_audio():
     # close PyAudio
     p.terminate()
 
+
 import select
+
+
 def receive_command():
+    global list_of_clients
     HEADER_LENGTH = 10
-    IP = "127.0.0.1"
+    IP = "192.168.0.106"
     PORT = 1234
-    server_port = 9688
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind((IP, PORT))
@@ -278,9 +376,8 @@ def receive_command():
 
                 print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
                                                                                 user['data'].decode('utf-8')))
-
-
-
+                list_of_clients.append(client_address)
+                print('Current clients: ', list_of_clients)
 
                 # video_stream()
 
@@ -325,23 +422,23 @@ def receive_command():
             # Remove from our list of users
             del clients[notified_socket]
 
+
 def audio_stream():
     print('pornit client')
 
     s = socket.socket()
-    s.bind((host_ip, (port - 1)))
+    s.bind(('192.168.0.106', (9689 - 1)))
 
     s.listen(5)
     CHUNK = 1024
     wf = wave.open("temp.wav", 'rb')
     p = pyaudio.PyAudio()
-    print('server listening at', (host_ip, (port - 1)))
+    print('server listening at', ('192.168.0.106', (9689 - 1)))
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                     channels=wf.getnchannels(),
                     rate=wf.getframerate(),
                     input=True,
                     frames_per_buffer=CHUNK)
-
 
     client_socket, addr = s.accept()
 
@@ -356,9 +453,10 @@ def audio_stream():
 
 from concurrent.futures import ThreadPoolExecutor
 
-with ThreadPoolExecutor(max_workers=4) as executor:
-    # executor.submit(audio_stream)
+with ThreadPoolExecutor(max_workers=6) as executor:
+    executor.submit(audio_stream)
     executor.submit(video_stream_gen)
     executor.submit(video_stream)
     executor.submit(receive_command)
+    # executor.submit(init_slider)
     # executor.submit(local_audio)
