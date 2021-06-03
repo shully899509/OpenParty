@@ -79,7 +79,7 @@ def getFrame(frame_nr):
     vid.set(cv2.CAP_PROP_POS_FRAMES, frame_nr)
 
 
-filename = 'vids\\surf.mp4'
+filename = 'vids\\monty.mp4'
 command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(filename, 'temp.wav')
 os.system(command)
 
@@ -449,6 +449,9 @@ def audio_stream():
                 a = pickle.dumps(data)
                 message = struct.pack("Q", len(a)) + a
                 client_socket.sendall(message)
+
+                # frame = pickle.loads(a)
+                # stream.write(frame)
 
 
 from concurrent.futures import ThreadPoolExecutor
