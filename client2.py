@@ -63,6 +63,9 @@ def video_stream():
         npdata = np.fromstring(data, dtype=np.uint8)
 
         frame = cv2.imdecode(npdata, 1)
+
+        # print(frame)
+
         frame = cv2.putText(frame, 'FPS: ' + str(fps), (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         cv2.imshow("RECEIVING VIDEO", frame)
         key = cv2.waitKey(1) & 0xFF
@@ -214,6 +217,6 @@ def send_command():
 from concurrent.futures import ThreadPoolExecutor
 
 with ThreadPoolExecutor(max_workers=3) as executor:
-    executor.submit(audio_stream)
+    # executor.submit(audio_stream)
     executor.submit(video_stream)
-    executor.submit(send_command)
+    # executor.submit(send_command)

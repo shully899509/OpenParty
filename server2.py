@@ -123,6 +123,7 @@ def video_stream_gen():
     vid.release()
 
 
+
 def video_stream():
     try:
         BUFF_SIZE = 65536
@@ -177,6 +178,11 @@ def video_stream():
            try:
                 # print('frame sending')
                 frame = q.get()
+
+
+                # print(frame)
+                # cv2.waitKey(-1)
+
                 encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
                 message = base64.b64encode(buffer)
 
@@ -188,6 +194,8 @@ def video_stream():
 
                 for client_addr_new in client_addr_new_all:
                     server_socket.sendto(message, client_addr_new)
+
+
                 # print('frame sent')
                 current_frame = int(vid.get(cv2.CAP_PROP_POS_FRAMES))
                 frame = cv2.putText(frame, 'FPS: ' + str(round(fps, 1)), (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7,
@@ -457,9 +465,9 @@ def audio_stream():
 from concurrent.futures import ThreadPoolExecutor
 
 with ThreadPoolExecutor(max_workers=6) as executor:
-    executor.submit(audio_stream)
+    # executor.submit(audio_stream)
     executor.submit(video_stream_gen)
     executor.submit(video_stream)
-    executor.submit(receive_command)
+    # executor.submit(receive_command)
     # executor.submit(init_slider)
     # executor.submit(local_audio)

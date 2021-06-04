@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QFrame" name="frame">
+  <widget class="QFrame" name="videoFrame">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -79,6 +79,19 @@
    </property>
    <property name="text">
     <string>Pause</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>520</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Open File</string>
    </property>
   </widget>
  </widget>
