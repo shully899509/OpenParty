@@ -14,6 +14,7 @@ import time
 import logging, random, imutils
 import os
 import pyaudio, wave, subprocess
+import select
 
 from PyQt5.QtCore import QRunnable, Qt, QThreadPool
 from pynput import keyboard
@@ -65,13 +66,14 @@ class PlayVideo(QThread):
     def __init__(self, cap, q, progresslabel, progressBar, frame, totalFrames, fps,
                  playButton, stopButton, fpsLabel):
 
+        super().__init__()
+
         self.cap = cap
         self.playButton = playButton
         self.stopButton = stopButton
         self.fpsLabel = fpsLabel
 
-        # print('init video gen')
-        super().__init__()
+
         self.q = q
         self.progresslabel = progresslabel
         self.progressBar = progressBar
@@ -80,7 +82,7 @@ class PlayVideo(QThread):
         self.fps = fps
         self.TS = (0.5 / self.fps)
 
-        self.progressBar.sliderReleased.connect(self.skipFrame)
+        self.progressBar.sliderReleased.connect(self.moveProgressBar)
         #
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(totalFrames)
@@ -114,7 +116,8 @@ class PlayVideo(QThread):
         print('Listening at:', self.socket_address)
 
     def when_slider_pressed(self):
-        self.timer.stop()
+        # self.timer.stop()
+        self.slider_pressed = True
 
     def frame_to_timestamp(self, frame, fps):
         return str(timedelta(seconds=(frame / fps)))
@@ -127,36 +130,36 @@ class PlayVideo(QThread):
         # stop timer
         self.timer.stop()
 
-    def skipFrame(self):
+    def moveProgressBar(self):
         value = self.progressBar.value()
-        # self.q.close()
-        # self.q = queue.Queue(maxsize=50)
         self.cap.set(1, value)
-        self.timer.start(self.TS * 1000)
-        #print(value)
+        self.slider_pressed = False
+        #self.timer.start(self.TS * 1000)
 
     def playVideo(self):
         # read image in BGR format
-        ret, frame, current_frame = self.q.get()
+        ret, frame, current_frame_no = self.q.get()
 
         if ret is True:
-            progress = self.frame_to_timestamp(current_frame, self.fps) + ' / ' \
+            progress = self.frame_to_timestamp(current_frame_no, self.fps) + ' / ' \
                        + self.frame_to_timestamp(self.totalFrames, self.fps)
             self.progresslabel.setText(progress)
             # logging.info(current_frame)
             # logging.info(threading.current_thread().ident)
-            self.progressBar.setValue(current_frame)
+
+            if self.slider_pressed is False:
+                self.progressBar.setValue(current_frame_no)
 
             try:
                 encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
                 message = base64.b64encode(buffer)
                 client_addr_new1 = ('192.168.0.106', 9689)  # udp ip to local client
-                self.server_socket.sendto(message, client_addr_new1)
+                client_addr_new2 = ('192.168.0.106', 9685)  # others
+                client_addr_new = [client_addr_new1, client_addr_new2]
+                for client in client_addr_new:
+                    self.server_socket.sendto(message, client)
             except Exception as e:
                 logging.error(e)
-
-            print(frame)
-            # self.timer.stop()
 
             # convert image to RGB format
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -167,10 +170,8 @@ class PlayVideo(QThread):
             # create QImage from image
             qImg = QImage(frame.data, width, height, step, QImage.Format_RGB888)
 
-
+            # show image in frame
             self.frame.setPixmap(QPixmap.fromImage(qImg))
-            self.frame.setScaledContents(True)
-            # print('after show image')
 
             self.fpsLabel.setText(str(round(self.fps2, 1)))
             if self.cnt == self.frames_to_count:
@@ -193,10 +194,10 @@ class PlayVideo(QThread):
 
         else:
             print('return false')
-            progress = str(current_frame) + ' / ' \
+            progress = str(current_frame_no) + ' / ' \
                        + str(self.totalFrames)
             self.progresslabel.setText(progress)
-            self.progressBar.setValue(current_frame)
+            self.progressBar.setValue(current_frame_no)
 
 
 from pygame import mixer
@@ -270,10 +271,160 @@ class LocalAudio(QThread):
         p.terminate()
 
 
+class TcpChat(QThread):
+    def __init__(self, threadVideoPlay):
+        super().__init__()
+
+        self.threadVideoPlay = threadVideoPlay
+
+        self.HEADER_LENGTH = 10
+
+        self.IP = "192.168.0.106"
+        self.PORT = 1234
+
+        # Create a socket
+        # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
+        # socket.SOCK_STREAM - TCP, conection-based, socket.SOCK_DGRAM - UDP, connectionless, datagrams, socket.SOCK_RAW - raw IP packets
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # SO_ - socket option
+        # SOL_ - socket option level
+        # Sets REUSEADDR (as a socket option) to 1 on socket
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        # Bind, so server informs operating system that it's going to use given IP and port
+        # For a server using 0.0.0.0 means to listen on all available interfaces, useful to connect locally to 127.0.0.1 and remotely to LAN interface IP
+        self.server_socket.bind((self.IP, self.PORT))
+
+        # This makes server listen to new connections
+        self.server_socket.listen()
+
+        # List of sockets for select.select()
+        self.sockets_list = [self.server_socket]
+
+        # List of connected clients - socket as a key, user header and name as data
+        self.clients = {}
+
+        print(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
+
+    def receive_message(self, client_socket):
+        try:
+
+            # Receive our "header" containing message length, it's size is defined and constant
+            message_header = client_socket.recv(self.HEADER_LENGTH)
+
+            # If we received no data, client gracefully closed a connection, for example using socket.close() or socket.shutdown(socket.SHUT_RDWR)
+            if not len(message_header):
+                return False
+
+            # Convert header to int value
+            message_length = int(message_header.decode('utf-8').strip())
+
+            # Return an object of message header and message data
+            return {'header': message_header, 'data': client_socket.recv(message_length)}
+
+        except:
+
+            # If we are here, client closed connection violently, for example by pressing ctrl+c on his script
+            # or just lost his connection
+            # socket.close() also invokes socket.shutdown(socket.SHUT_RDWR) what sends information about closing the socket (shutdown read/write)
+            # and that's also a cause when we receive an empty message
+            return False
+
+
+    def run(self):
+        print('running chat')
+        while True:
+
+            # Calls Unix select() system call or Windows select() WinSock call with three parameters:
+            #   - rlist - sockets to be monitored for incoming data
+            #   - wlist - sockets for data to be send to (checks if for example buffers are not full and socket is ready to send some data)
+            #   - xlist - sockets to be monitored for exceptions (we want to monitor all sockets for errors, so we can use rlist)
+            # Returns lists:
+            #   - reading - sockets we received some data on (that way we don't have to check sockets manually)
+            #   - writing - sockets ready for data to be send thru them
+            #   - errors  - sockets with some exceptions
+            # This is a blocking call, code execution will "wait" here and "get" notified in case any action should be taken
+            read_sockets, _, exception_sockets = select.select(self.sockets_list, [], self.sockets_list)
+
+            # Iterate over notified sockets
+            for notified_socket in read_sockets:
+
+                # If notified socket is a server socket - new connection, accept it
+                if notified_socket == self.server_socket:
+
+                    # Accept new connection
+                    # That gives us new socket - client socket, connected to this given client only, it's unique for that client
+                    # The other returned object is ip/port set
+                    client_socket, client_address = self.server_socket.accept()
+
+                    # Client should send his name right away, receive it
+                    user = self.receive_message(client_socket)
+
+                    # If False - client disconnected before he sent his name
+                    if user is False:
+                        continue
+
+                    # Add accepted socket to select.select() list
+                    self.sockets_list.append(client_socket)
+
+                    # Also save username and username header
+                    self.clients[client_socket] = user
+
+                    print('Accepted new connection from {}:{}, username: {}'.format(*client_address,
+                                                                                    user['data'].decode('utf-8')))
+
+                # Else existing socket is sending a message
+                else:
+
+                    # Receive message
+                    message = self.receive_message(notified_socket)
+
+                    # If False, client disconnected, cleanup
+                    if message is False:
+                        print('Closed connection from: {}'.format(self.clients[notified_socket]['data'].decode('utf-8')))
+
+                        # Remove from list for socket.socket()
+                        self.sockets_list.remove(notified_socket)
+
+                        # Remove from our list of users
+                        del self.clients[notified_socket]
+
+                        continue
+
+                    # Get user by notified socket, so we will know who sent the message
+                    user = self.clients[notified_socket]
+
+                    print(f'Received message from {user["data"].decode("utf-8")}: {message["data"].decode("utf-8")}')
+
+                    command = message["data"].decode("utf-8")
+                    if command == '/play':
+                        self.threadVideoPlay.playTimer()
+                    elif command == '/pause':
+                        self.threadVideoPlay.stopTimer()
+
+                    # Iterate over connected clients and broadcast message
+                    for client_socket in self.clients:
+
+                        # But don't sent it to sender
+                        if client_socket != notified_socket:
+                            # Send user and message (both with their headers)
+                            # We are reusing here message header sent by sender, and saved username header send by user when he connected
+                            client_socket.send(user['header'] + user['data'] + message['header'] + message['data'])
+
+            # It's not really necessary to have this, but will handle some socket exceptions just in case
+            for notified_socket in exception_sockets:
+                # Remove from list for socket.socket()
+                self.sockets_list.remove(notified_socket)
+
+                # Remove from our list of users
+                del self.clients[notified_socket]
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi('open.ui', self)
+        self.frame.setScaledContents(True)
         self.setWindowTitle('Video Player')
         self.totalFrames = 0
         self.fps = 0
@@ -281,6 +432,7 @@ class MainWindow(QMainWindow):
         self.threadVideoGen = QThread()
         self.threadVideoPlay = QThread()
         self.threadAudio = QThread()
+        self.threadChat = QThread()
         self.openButton.clicked.connect(self.openFile)
 
     def openFile(self):
@@ -297,6 +449,7 @@ class MainWindow(QMainWindow):
         self.startVideoGen()
         self.startVideoPlay()
         # self.startAudio()
+        self.startTcpChat()
 
     def startVideoGen(self):
         self.threadVideoGen = VideoGen(self.cap, self.q)
@@ -308,9 +461,16 @@ class MainWindow(QMainWindow):
                                          self.fpsLabel)
         self.threadVideoPlay.start()
 
+
+
     def startAudio(self):
         self.threadAudio = LocalAudio()
         self.threadAudio.start()
+
+    def startTcpChat(self):
+        self.threadChat = TcpChat(self.threadVideoPlay)
+        self.threadChat.start()
+
 
 
 app = QApplication(sys.argv)
