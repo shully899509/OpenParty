@@ -27,35 +27,29 @@ path = BASE_DIR.replace('\\'[0], '/')
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 class PlayVideo(QThread):
-    def __init__(self, frame, fpsLabel, threadChat, playButton, stopButton, chat_socket, HEADER_LENGTH):
+    def __init__(self, frame, fpsLabel, threadChat, playButton, stopButton, chat_socket, HEADER_LENGTH,
+                 progressBar):
         super().__init__()
 
         self.frame = frame
         self.fpsLabel = fpsLabel
-        # self.progressBar.sliderReleased.connect(self.skipFrame)
-        #
+
         # self.progressBar.setMinimum(0)
         # self.progressBar.setMaximum(totalFrames)
 
         self.playButton = playButton
         self.stopButton = stopButton
+        self.progressBar = progressBar
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.playVideo)
         self.timer.start(0.5)
 
         self.threadChat = threadChat
-        #
+
         self.playButton.clicked.connect(self.playTimer)
         self.stopButton.clicked.connect(self.stopTimer)
-        #
-        # self.slider_pressed = False
-        # self.progressBar.sliderPressed.connect(self.when_slider_pressed)
-        #
-        # self.fps2 = 0
-        # self.st = 0
-        # self.frames_to_count = 1
-        # self.cnt = 0
+
 
         self.fps, self.st, self.frames_to_count, self.cnt = (0, 0, 20, 0)
 
@@ -67,16 +61,13 @@ class PlayVideo(QThread):
         self.client_socket.bind(self.socket_address)
         self.client_socket.setblocking(False)
 
+        self.progressBar.sliderPressed.connect(self.when_slider_pressed)
+        self.progressBar.sliderReleased.connect(self.moveProgressBar)
+
         self.chat_socket = chat_socket
         self.HEADER_LENGTH = HEADER_LENGTH
 
-        # cv2.namedWindow('RECEIVING VIDEO')
-        # cv2.resizeWindow('RECEIVING VIDEO', 640, 480)
-
-        # self.playVideo()
-
-    def when_slider_pressed(self):
-        self.timer.stop()
+        self.slider_pressed = False
 
     def frame_to_timestamp(self, frame, fps):
         return str(timedelta(seconds=(frame / fps)))
@@ -131,13 +122,13 @@ class PlayVideo(QThread):
         # stop timer
         self.send_message('/pause')
 
-    def skipFrame(self):
+    def when_slider_pressed(self):
+        self.slider_pressed = True
+
+    def moveProgressBar(self):
         value = self.progressBar.value()
-        # self.q.close()
-        # self.q = queue.Queue(maxsize=50)
-        self.cap.set(1, value)
-        self.timer.start(self.TS * 1000)
-        # print(value)
+        self.send_message('/skipto ' + str(value))
+        self.slider_pressed = False
 
     def playVideo(self):
         try:
@@ -251,7 +242,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         loadUi('open_client.ui', self)
         self.frame.setScaledContents(True)
-        self.setWindowTitle('Video Player')
+        self.setWindowTitle('OpenParty Client')
         self.totalFrames = 0
         self.fps = 0
         self.threadVideoGen = QThread()
@@ -276,11 +267,14 @@ class MainWindow(QMainWindow):
         # self.threadVideoPlay.isRunning()
         # self.threadChat.send_message('bye bye')
         self.chat_socket.close()
+        self.threadVideoPlay.terminate()
+        self.threadChat.terminate()
 
     def startVideoPlay(self):
         self.threadVideoPlay = PlayVideo(self.frame, self.fpsLabel, self.threadChat,
                                          self.playButton, self.stopButton,
-                                         self.chat_socket, self.HEADER_LENGTH)
+                                         self.chat_socket, self.HEADER_LENGTH,
+                                         self.progressBar)
         self.threadVideoPlay.start()
 
     def startTcpChat(self):

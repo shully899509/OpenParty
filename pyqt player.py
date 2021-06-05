@@ -47,12 +47,13 @@ class VideoGen(QThread):
 
                 frame = imutils.resize(frame, width=WIDTH)
                 self.q.put((ret, frame, current_frame))
+                # logging.info('{} {}'.format('insert into q ', current_frame))
                 # print('sent frame: ', self.q.qsize())
                 # frame_no += 1
                 # print('after add frame')
             except Exception as e:
+                logging.error(e)
                 break
-                # print(e)
                 # os._exit(1)
         print('Player closed')
         BREAK = True
@@ -63,10 +64,15 @@ import threading
 
 
 class PlayVideo(QThread):
+    playSignal = pyqtSignal()
+    stopSignal = pyqtSignal()
     def __init__(self, cap, q, progresslabel, progressBar, frame, totalFrames, fps,
                  playButton, stopButton, fpsLabel):
 
         super().__init__()
+
+        self.playSignal.connect(self.playTimer)
+        self.stopSignal.connect(self.stopTimer)
 
         self.cap = cap
         self.playButton = playButton
@@ -82,21 +88,24 @@ class PlayVideo(QThread):
         self.fps = fps
         self.TS = (0.5 / self.fps)
 
-        self.progressBar.sliderReleased.connect(self.moveProgressBar)
+
         #
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(totalFrames)
 
 
         self.timer = QTimer()
+        # self.timer.moveToThread(self)
         self.timer.timeout.connect(self.playVideo)
         self.timer.start(self.TS * 1000)
+
 
         self.playButton.clicked.connect(self.playTimer)
         self.stopButton.clicked.connect(self.stopTimer)
 
         self.slider_pressed = False
         self.progressBar.sliderPressed.connect(self.when_slider_pressed)
+        self.progressBar.sliderReleased.connect(self.moveProgressBar)
 
         self.fps2 = 0
         self.st = 0
@@ -116,7 +125,6 @@ class PlayVideo(QThread):
         print('Listening at:', self.socket_address)
 
     def when_slider_pressed(self):
-        # self.timer.stop()
         self.slider_pressed = True
 
     def frame_to_timestamp(self, frame, fps):
@@ -125,16 +133,31 @@ class PlayVideo(QThread):
     def playTimer(self):
         # start timer
         self.timer.start(self.TS * 1000)
+        print('play thread ', self.TS * 1000)
 
     def stopTimer(self):
         # stop timer
         self.timer.stop()
+        print('stop thread')
 
     def moveProgressBar(self):
+        try:
+            self.timer.stop()
+            while not self.q.empty(): self.q.get()
+            time.sleep(0.05)
+            self.timer.start(self.TS * 1000)
+        except Exception as e:
+            logging.error(e)
         value = self.progressBar.value()
         self.cap.set(1, value)
         self.slider_pressed = False
-        #self.timer.start(self.TS * 1000)
+
+
+    def moveProgressBarClient(self, value):
+        self.cap.set(1, value)
+
+    # def run(self):
+    #     self.timer.start(self.TS * 1000)
 
     def playVideo(self):
         # read image in BGR format
@@ -274,7 +297,6 @@ class LocalAudio(QThread):
 class TcpChat(QThread):
     def __init__(self, threadVideoPlay):
         super().__init__()
-
         self.threadVideoPlay = threadVideoPlay
 
         self.HEADER_LENGTH = 10
@@ -399,9 +421,19 @@ class TcpChat(QThread):
 
                     command = message["data"].decode("utf-8")
                     if command == '/play':
-                        self.threadVideoPlay.playTimer()
+                        self.threadVideoPlay.playSignal.emit()
+                        pass
                     elif command == '/pause':
-                        self.threadVideoPlay.stopTimer()
+                        self.threadVideoPlay.stopSignal.emit()
+                        pass
+                    elif command[:7] == '/skipto':
+                        try:
+                            frame_nb = int(command[8:])
+                            self.threadVideoPlay.stopSignal.emit()
+                            self.threadVideoPlay.moveProgressBarClient(frame_nb)
+                            self.threadVideoPlay.playSignal.emit()
+                        except Exception as e:
+                            logging.error('Error reading frame skip command\n', e)
 
                     # Iterate over connected clients and broadcast message
                     for client_socket in self.clients:
@@ -425,7 +457,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         loadUi('open.ui', self)
         self.frame.setScaledContents(True)
-        self.setWindowTitle('Video Player')
+        self.setWindowTitle('OpenParty Server')
         self.totalFrames = 0
         self.fps = 0
         self.q = queue.Queue(maxsize=10)
@@ -434,6 +466,8 @@ class MainWindow(QMainWindow):
         self.threadAudio = QThread()
         self.threadChat = QThread()
         self.openButton.clicked.connect(self.openFile)
+
+        self.playSignal = pyqtSignal()
 
     def openFile(self):
         self.videoFileName = QFileDialog.getOpenFileName(self, 'Select Video File')
@@ -471,7 +505,11 @@ class MainWindow(QMainWindow):
         self.threadChat = TcpChat(self.threadVideoPlay)
         self.threadChat.start()
 
-
+    def closeEvent(self, event):
+        print('closed manually')
+        self.threadVideoGen.terminate()
+        self.threadVideoPlay.terminate()
+        self.threadChat.terminate()
 
 app = QApplication(sys.argv)
 widget = MainWindow()
