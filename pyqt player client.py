@@ -1,5 +1,5 @@
-# TODO: receive audio packets and sync with video
-# TODO: try to connect to host AFTER clicking on 'start' button
+# TODO: (only sent audio, still need sync) receive audio packets and sync with video
+# DONE: try to connect to host AFTER clicking on 'start' button
 # TODO: fix crash when video is ended or trying to reconnect
 import base64
 import os
@@ -22,13 +22,9 @@ import pyaudio, wave, subprocess
 import errno
 import pickle
 
-from PyQt5.QtCore import QRunnable, Qt, QThreadPool
-from pynput import keyboard
-
-BASE_DIR = os.path.dirname(__file__)
-path = BASE_DIR.replace('\\'[0], '/')
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
+
 
 class PlayVideo(QThread):
     def __init__(self, frame, fpsLabel, threadChat, playButton, stopButton, chat_socket, HEADER_LENGTH,
@@ -52,13 +48,12 @@ class PlayVideo(QThread):
         self.playButton.clicked.connect(self.playTimer)
         self.stopButton.clicked.connect(self.stopTimer)
 
-
         self.fps, self.st, self.frames_to_count, self.cnt = (0, 0, 20, 0)
 
         self.BUFF_SIZE = 65536
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
-        self.socket_address = ('192.168.0.106', 9685)
+        self.socket_address = ('192.168.0.106', 9689)
         print('Reading from:', self.socket_address)
         self.client_socket.bind(self.socket_address)
         self.client_socket.setblocking(False)
@@ -140,6 +135,8 @@ class PlayVideo(QThread):
             packet = pickle.loads(packet_ser)
 
             # TODO: receive total_frames and real_fps from the chat TCP socket only once
+            # can't since server can open different video file and client metadata doesn't update
+            # consider sending total_frames and real_fps to client over TCP chat everytime we change the file
             current_frame_no = packet["frame_nb"]
             total_frames = packet["total_frames"]
             real_fps = packet["fps"]
@@ -158,10 +155,6 @@ class PlayVideo(QThread):
             data = base64.b64decode(packet["frame"], ' /')
             npdata = np.fromstring(data, dtype=np.uint8)
             frame = cv2.imdecode(npdata, 1)
-
-            # print(frame)
-
-            # cv2.imshow("RECEIVING VIDEO", frame)
 
             # convert image to RGB format
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -190,10 +183,12 @@ class PlayVideo(QThread):
             pass
         except Exception as e:
             logging.error(e)
+
         # print('received')
 
         def quit(self):
             print('closed thread')
+
 
 class TcpChat(QThread):
     def __init__(self, chat_socket, HEADER_LENGHT):
@@ -201,14 +196,22 @@ class TcpChat(QThread):
         self.chat_socket = chat_socket
         self.HEADER_LENGTH = HEADER_LENGHT
 
-        self.my_username = input("Username: ")
+        self.IP = "192.168.0.106"
+        self.PORT = 1234
+        # Connect to a given ip and port
+        self.chat_socket.connect((self.IP, self.PORT))
+
+        # Set connection to non-blocking state, so .recv() call won;t block, just return some exception we'll handle
+        self.chat_socket.setblocking(False)
+
+
+        self.my_username = 'testing_user' #input("Username: ")
 
         # Prepare username and header and send them
         # We need to encode username to bytes, then count number of bytes and prepare header of fixed size, that we encode to bytes as well
         self.username = self.my_username.encode('utf-8')
         self.username_header = f"{len(self.username):<{self.HEADER_LENGTH}}".encode('utf-8')
         self.chat_socket.send(self.username_header + self.username)
-
 
         # Create a socket
         # socket.AF_INET - address family, IPv4, some otehr possible are AF_INET6, AF_BLUETOOTH, AF_UNIX
@@ -261,6 +264,56 @@ class TcpChat(QThread):
             message = input(f'{self.my_username} > ')
             self.send_message(message)
 
+
+import threading
+class AudioRec(QThread):
+    def __init__(self):
+        super().__init__()
+
+        self.host_name = socket.gethostname()
+        self.host_ip = '192.168.0.106'  # socket.gethostbyname(host_name)
+        print(self.host_ip)
+        self.port = 9634
+        # For details visit: www.pyshine.com
+        self.q = queue.Queue(maxsize=100)
+
+        self.BUFF_SIZE = 65536
+        self.audio_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.audio_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
+        self.socket_address = (self.host_ip, self.port)
+        self.audio_socket.bind(self.socket_address)
+        self.p = pyaudio.PyAudio()
+        self.CHUNK = 1024
+        self.stream = self.p.open(format=self.p.get_format_from_width(2),
+                                  channels=2,
+                                  rate=44100,
+                                  output=True,
+                                  frames_per_buffer=self.CHUNK)
+
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.playAudio)
+        self.timer.start(1000 * 0.8 * self.CHUNK / 44100)
+
+        t1 = threading.Thread(target=self.getAudioData, args=())
+        t1.start()
+        print('Now Playing...')
+
+    def getAudioData(self):
+        while True:
+            try:
+                self.frame, _ = self.audio_socket.recvfrom(self.BUFF_SIZE)
+                self.q.put(self.frame)
+            except BlockingIOError:
+                pass
+            except Exception as e:
+                logging.error(e)
+
+    def playAudio(self):
+        if not self.q.empty():
+            frame = self.q.get()
+            self.stream.write(frame)
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -273,26 +326,30 @@ class MainWindow(QMainWindow):
         self.threadVideoPlay = QThread()
         self.threadAudio = QThread()
         self.threadChat = QThread()
-        self.readHost.clicked.connect(self.startVideoPlay)
-        self.readHost.clicked.connect(self.startTcpChat)
+        self.readHost.clicked.connect(self.startAllThreads)
 
-        self.IP = "192.168.0.106"
-        self.PORT = 1234
+
+
         self.HEADER_LENGTH = 10
         self.chat_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # Connect to a given ip and port
-        self.chat_socket.connect((self.IP, self.PORT))
 
-        # Set connection to non-blocking state, so .recv() call won;t block, just return some exception we'll handle
-        self.chat_socket.setblocking(False)
+
+
+    def startAllThreads(self):
+        if not self.threadAudio.isRunning():
+            self.startAudio()
+        if not self.threadVideoPlay.isRunning():
+            self.startVideoPlay()
+        if not self.threadChat.isRunning():
+            self.startTcpChat()
 
     def closeEvent(self, event):
         print('closed manually')
-        # self.threadVideoPlay.isRunning()
-        # self.threadChat.send_message('bye bye')
         self.chat_socket.close()
         self.threadVideoPlay.terminate()
+        self.threadAudio.terminate()
         self.threadChat.terminate()
+        os._exit(1)
 
     def startVideoPlay(self):
         self.threadVideoPlay = PlayVideo(self.frame, self.fpsLabel, self.threadChat,
@@ -301,12 +358,13 @@ class MainWindow(QMainWindow):
                                          self.progressBar, self.progresslabel)
         self.threadVideoPlay.start()
 
+    def startAudio(self):
+        self.threadAudio = AudioRec()
+        self.threadAudio.start()
+
     def startTcpChat(self):
         self.threadChat = TcpChat(self.chat_socket, self.HEADER_LENGTH)
         self.threadChat.start()
-
-
-
 
 
 app = QApplication(sys.argv)

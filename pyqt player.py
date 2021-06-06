@@ -1,7 +1,8 @@
-# TODO: send audio packets through UDP socket and sync with video
+# TODO: (needs sync) send audio packets through UDP socket and sync with video
 # TODO: move code into separate .py files for each module
 # TODO: replace send frames to hardcoded client addresses with list of addresses from chat TCP connection
-# TODO: fix crash when trying to open another video
+# DONE: fix crash when trying to open another video
+# TODO: fix TCP chat so it updates all clients when receiving message
 import base64
 import os
 import socket
@@ -37,6 +38,10 @@ class VideoGen(QThread):
         self.cap = cap
         self.q = q
 
+    def destroy(self):
+        self.terminate()
+        self.deleteLater()
+
     def run(self):
         # set how much pixels should be sent using the UDP socket
         # too much will cause lag because of too large packets
@@ -69,6 +74,11 @@ class VideoGen(QThread):
 class PlayVideo(QThread):
     playSignal = pyqtSignal()
     stopSignal = pyqtSignal()
+    is_paused = True
+
+    def destroy(self):
+        self.terminate()
+        self.deleteLater()
 
     def __init__(self, cap, q, progresslabel, progressBar, frame, totalFrames, fps,
                  playButton, stopButton, fpsLabel):
@@ -99,7 +109,7 @@ class PlayVideo(QThread):
         # timer to loop the frame displaying function
         self.timer = QTimer()
         self.timer.timeout.connect(self.playVideo)
-        self.timer.start(self.TS * 1000)
+        # self.timer.start(self.TS * 1000)
 
         # bind play/pause buttons
         self.playButton.clicked.connect(self.playTimer)
@@ -126,10 +136,12 @@ class PlayVideo(QThread):
         print('udp ip connect: ', self.host_ip)
         port = 9688
         self.socket_address = (self.host_ip, port)
-        self.server_socket.bind(self.socket_address)
+        # self.server_socket.bind(self.socket_address)
         print('Listening at:', self.socket_address)
 
         self.cnt = 1
+
+        self.fps_mean = 0
 
     # convert frame number to timestamp
     def frame_to_timestamp(self, frame, fps):
@@ -138,12 +150,12 @@ class PlayVideo(QThread):
     # restart the timer when play button is pressed
     def playTimer(self):
         self.timer.start(self.TS * 1000)
-        # print('play thread ', self.TS * 1000)
+        self.is_paused = False
 
     # stop the timer when pause button is pressed
     def stopTimer(self):
         self.timer.stop()
-        # print('stop thread')
+        self.is_paused = True
 
     # stop updating the progress bar while slider is clicked
     def when_slider_pressed(self):
@@ -153,9 +165,10 @@ class PlayVideo(QThread):
     def moveProgressBar(self):
         try:
             self.timer.stop()
-            while not self.q.empty(): self.q.get()
+            for i in range(self.q.qsize()): self.q.get()
             time.sleep(0.05)
-            self.timer.start(self.TS * 1000)
+            if not self.is_paused:
+                self.timer.start(self.TS * 1000)
         except Exception as e:
             logging.error(e)
         value = self.progressBar.value()
@@ -163,6 +176,8 @@ class PlayVideo(QThread):
         self.slider_pressed = False
 
     def moveProgressBarClient(self, value):
+        for i in range(self.q.qsize()): self.q.get()
+        time.sleep(0.05)
         self.cap.set(1, value)
 
     # function for displaying and sending frames
@@ -170,8 +185,6 @@ class PlayVideo(QThread):
     def playVideo(self):
         # read image from queue
         ret, frame, current_frame_no = self.q.get()
-
-
 
         # if self.cnt == 1: print(frame)
 
@@ -197,7 +210,6 @@ class PlayVideo(QThread):
                             "fps": self.fps}
                 packed_message = pickle.dumps(msg_pair)
 
-
                 # if self.cnt == 1: print(buffer)
                 # self.cnt += 1
 
@@ -222,9 +234,16 @@ class PlayVideo(QThread):
             # show image in UI frame label
             self.frame.setPixmap(QPixmap.fromImage(qImg))
 
+            # self.threadAudio.playAudioSignal.emit()
+
             # because frame processing time if fluctuating
             # we need to sync it to the FPS fetched from the metadata
             self.fpsLabel.setText(str(round(self.fps2, 1)))
+
+            # self.fps_mean += self.fps2
+            # self.fps_mean /= 2
+            # print(self.fps_mean)
+
             if self.cnt == self.frames_to_count:
                 try:
                     self.fps2 = (self.frames_to_count / (time.time() - self.st))
@@ -256,78 +275,113 @@ import audioop
 
 
 class LocalAudio(QThread):
-    def __init__(self):
+    playAudioSignal = pyqtSignal()
+
+    playSignal = pyqtSignal()
+    stopSignal = pyqtSignal()
+
+    def destroy(self):
+        self.terminate()
+        self.deleteLater()
+
+    def __init__(self, playButton, stopButton, progressBar, audioProgressLabel, video_fps):
         super().__init__()
-        self.paused = False
 
-    def run(self):
-        # factor = 0.5
-        #
-        # with wave.open('temp.wav', 'rb') as wav:
-        #     p = wav.getparams()
-        #     with wave.open('temp.wav', 'wb') as audio:
-        #         audio.setparams(p)
-        #         frames = wav.readframes(p.nframes)
-        #         audio.writeframesraw(audioop.mul(frames, p.sampwidth, factor))
+        self.playAudioSignal.connect(self.playAudio)
+        self.audioProgressLabel = audioProgressLabel
+        self.video_fps = video_fps
 
-        # mixer.init()
-        # mixer.music.load('temp.wav')
-        # mixer.music.play()
+        # signals used by TCP chat thread in order to play/pause the timer from the exterior
+        self.playSignal.connect(self.playTimer)
+        self.stopSignal.connect(self.stopTimer)
 
-        wf = wave.open("temp.wav", 'rb')
-        CHUNK = 1024
-        p = pyaudio.PyAudio()
+        # seek audio to slider position when released
+        self.progressBar = progressBar
+        self.progressBar.sliderReleased.connect(self.moveSlider)
 
-        def on_press(key):
-            global paused
-            print(key)
-            if key == keyboard.Key.space:
-                if stream.is_stopped():  # time to play audio
-                    print('play pressed')
-                    stream.start_stream()
-                    # subprocess.call(["amixer", "-D", "pulse", "sset", "Master", "10%-"])
-                    paused = False
-                    return False
-                elif stream.is_active():  # time to pause audio
-                    print('pause pressed')
-                    stream.stop_stream()
-                    self.paused = True
-                    return False
-            return False
+        # bind play/pause buttons
+        self.playButton = playButton
+        self.stopButton = stopButton
+        self.playButton.clicked.connect(self.playTimer)
+        self.stopButton.clicked.connect(self.stopTimer)
 
-        # define callback
-        def callback(in_data, frame_count, time_info, status):
-            data = wf.readframes(frame_count)
-            return (data, pyaudio.paContinue)
+        self.host_name = socket.gethostname()
+        self.host_ip = '192.168.0.106'  # socket.gethostbyname(host_name)
+        print('audio host at ', self.host_ip)
+        self.port = 9633
 
-        stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                        channels=wf.getnchannels(),
-                        rate=wf.getframerate(),
-                        output=True,
-                        frames_per_buffer=CHUNK,
-                        stream_callback=callback)
+        self.BUFF_SIZE = 65536
+        self.audio_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.audio_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
 
-        # start the stream
-        stream.start_stream()
+        # self.audio_socket.bind((self.host_ip, (self.port)))
+        self.CHUNK = 1024
+        self.wf = wave.open("temp.wav")
+        self.p = pyaudio.PyAudio()
+        print('server listening at', (self.host_ip, (self.port)), self.wf.getframerate())
+        self.stream = self.p.open(format=self.p.get_format_from_width(self.wf.getsampwidth()),
+                                  channels=self.wf.getnchannels(),
+                                  rate=self.wf.getframerate(),
+                                  input=True, output=True,
+                                  frames_per_buffer=self.CHUNK)
+        print('audio framerate', self.wf.getframerate())
+        self.data = None
+        self.sample_rate = self.wf.getframerate()
 
-        while stream.is_active() or self.paused == True:
-            with keyboard.Listener(on_press=on_press) as listener:
-                listener.join()
-            time.sleep(0.1)
+        self.client_addr = ('192.168.0.106', 9634)
 
-        # stop stream
-        stream.stop_stream()
-        stream.close()
-        wf.close()
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.playAudio)
 
-        # close PyAudio
-        p.terminate()
+        self.total_frames = self.wf.getnframes()
+
+    # restart the timer when play button is pressed
+    def playTimer(self):
+        self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
+        self.is_paused = False
+
+    # stop the timer when pause button is pressed
+    def stopTimer(self):
+        self.timer.stop()
+        self.is_paused = True
+
+    def moveSlider(self):
+        try:
+            self.timer.stop()
+            value = self.progressBar.value()
+            time.sleep(0.05)
+            if not self.is_paused:
+                self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
+
+            self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
+            # print('skipped to ', (value/25))
+        except Exception as e:
+            logging.error(e)
+
+    def moveSliderClient(self, value):
+        time.sleep(0.05)
+        self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
+
+    def playAudio(self):
+        # print('chunk {}, sample rate {}, second {}'.format(self.wf.tell(),
+        #                                                    self.sample_rate,
+        #                                                    self.wf.tell()/self.sample_rate))
+
+        self.data = self.wf.readframes(self.CHUNK)
+        current_position = self.wf.tell()
+        progress = str(timedelta(seconds=(current_position / self.sample_rate))) + ' / ' \
+                   + str(timedelta(seconds=(self.total_frames / self.sample_rate)))
+        self.audioProgressLabel.setText(progress)
+
+        self.audio_socket.sendto(self.data, self.client_addr)
+        self.stream.write(self.data)
 
 
 class TcpChat(QThread):
-    def __init__(self, threadVideoPlay):
+    def __init__(self, threadVideoPlay, threadAudioPlay):
         super().__init__()
         self.threadVideoPlay = threadVideoPlay
+        self.threadAudioPlay = threadAudioPlay
 
         self.HEADER_LENGTH = 10
 
@@ -358,6 +412,10 @@ class TcpChat(QThread):
         self.clients = {}
 
         print(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
+
+    def update_threads(self, video_thread, audio_thread):
+        self.threadVideoPlay = video_thread
+        self.threadAudioPlay = audio_thread
 
     def receive_message(self, client_socket):
         try:
@@ -452,16 +510,21 @@ class TcpChat(QThread):
                     command = message["data"].decode("utf-8")
                     if command == '/play':
                         self.threadVideoPlay.playSignal.emit()
-                        pass
+                        self.threadAudioPlay.playSignal.emit()
                     elif command == '/pause':
                         self.threadVideoPlay.stopSignal.emit()
-                        pass
+                        self.threadAudioPlay.stopSignal.emit()
                     elif command[:7] == '/skipto':
                         try:
                             frame_nb = int(command[8:])
+                            video_was_paused = self.threadVideoPlay.is_paused
                             self.threadVideoPlay.stopSignal.emit()
+                            self.threadAudioPlay.stopSignal.emit()
                             self.threadVideoPlay.moveProgressBarClient(frame_nb)
-                            self.threadVideoPlay.playSignal.emit()
+                            self.threadAudioPlay.moveSliderClient(frame_nb)
+                            if not video_was_paused:
+                                self.threadVideoPlay.playSignal.emit()
+                                self.threadAudioPlay.playSignal.emit()
                         except Exception as e:
                             logging.error('Error reading frame skip command\n', e)
 
@@ -492,11 +555,12 @@ class MainWindow(QMainWindow):
         self.totalFrames = 0
         self.fps = 0
         self.q = queue.Queue(maxsize=10)
+        self.openButton.clicked.connect(self.openFile)
+
         self.threadVideoGen = QThread()
         self.threadVideoPlay = QThread()
         self.threadAudio = QThread()
         self.threadChat = QThread()
-        self.openButton.clicked.connect(self.openFile)
 
     # initialize threads for each component
     def startVideoGen(self):
@@ -510,15 +574,37 @@ class MainWindow(QMainWindow):
         self.threadVideoPlay.start()
 
     def startAudio(self):
-        self.threadAudio = LocalAudio()
+        self.threadAudio = LocalAudio(self.playButton, self.stopButton,
+                                      self.progressBar, self.audioProgressLabel,
+                                      self.fps)
         self.threadAudio.start()
 
     def startTcpChat(self):
-        self.threadChat = TcpChat(self.threadVideoPlay)
-        self.threadChat.start()
+        if not self.threadChat.isRunning():
+            print('starting chat thread...')
+            self.threadChat = TcpChat(self.threadVideoPlay, self.threadAudio)
+            self.threadChat.start()
+        else:
+            self.threadChat.update_threads(self.threadVideoPlay, self.threadAudio)
+
 
     # after opening file start threads for each component
     def openFile(self):
+        if self.threadVideoPlay.isRunning():
+            self.threadVideoPlay.stopSignal.emit()
+        if self.threadAudio.isRunning():
+            self.threadAudio.stopSignal.emit()
+
+        if self.threadVideoGen.isRunning():
+            self.threadVideoGen.destroy()
+        if self.threadVideoPlay.isRunning():
+            self.threadVideoPlay.destroy()
+        if self.threadAudio.isRunning():
+            self.threadAudio.destroy()
+        self.threadVideoGen = QThread()
+        self.threadVideoPlay = QThread()
+        self.threadAudio = QThread()
+
         self.videoFileName = QFileDialog.getOpenFileName(self, 'Select Video File')
         self.file_name = list(self.videoFileName)[0]
         self.cap = cv2.VideoCapture(self.file_name)
@@ -526,20 +612,21 @@ class MainWindow(QMainWindow):
         print('Opening file {} with fps {}'.format(list(self.videoFileName)[0], self.fps))
 
         # extract and convert audio from the video file into a temp.wav to be sent
-        # command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
-        # os.system(command)
+        command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
+        os.system(command)
 
         self.totalFrames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        self.startAudio()
         self.startVideoGen()
         self.startVideoPlay()
-        # self.startAudio()
         self.startTcpChat()
 
     # when exiting the UI make sure the threads are closed properly
     def closeEvent(self, event):
         print('closed manually')
-        self.threadVideoGen.terminate()
-        self.threadVideoPlay.terminate()
+        self.threadVideoGen.destroy()
+        self.threadVideoPlay.destroy()
+        self.threadAudio.destroy()
         self.threadChat.terminate()
 
 
