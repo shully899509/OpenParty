@@ -1,3 +1,6 @@
+# TODO: receive audio packets and sync with video
+# TODO: try to connect to host AFTER clicking on 'start' button
+# TODO: fix crash when video is ended or trying to reconnect
 import base64
 import os
 import socket
@@ -17,6 +20,7 @@ import logging, random, imutils
 import os
 import pyaudio, wave, subprocess
 import errno
+import pickle
 
 from PyQt5.QtCore import QRunnable, Qt, QThreadPool
 from pynput import keyboard
@@ -28,18 +32,16 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 class PlayVideo(QThread):
     def __init__(self, frame, fpsLabel, threadChat, playButton, stopButton, chat_socket, HEADER_LENGTH,
-                 progressBar):
+                 progressBar, progresslabel):
         super().__init__()
 
         self.frame = frame
         self.fpsLabel = fpsLabel
 
-        # self.progressBar.setMinimum(0)
-        # self.progressBar.setMaximum(totalFrames)
-
         self.playButton = playButton
         self.stopButton = stopButton
         self.progressBar = progressBar
+        self.progresslabel = progresslabel
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.playVideo)
@@ -56,7 +58,7 @@ class PlayVideo(QThread):
         self.BUFF_SIZE = 65536
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
-        self.socket_address = ('192.168.0.106', 9689)
+        self.socket_address = ('192.168.0.106', 9685)
         print('Reading from:', self.socket_address)
         self.client_socket.bind(self.socket_address)
         self.client_socket.setblocking(False)
@@ -68,6 +70,7 @@ class PlayVideo(QThread):
         self.HEADER_LENGTH = HEADER_LENGTH
 
         self.slider_pressed = False
+        self.set_total_frames = False
 
     def frame_to_timestamp(self, frame, fps):
         return str(timedelta(seconds=(frame / fps)))
@@ -132,8 +135,27 @@ class PlayVideo(QThread):
 
     def playVideo(self):
         try:
-            packet, _ = self.client_socket.recvfrom(self.BUFF_SIZE)
-            data = base64.b64decode(packet, ' /')
+            packet_ser, _ = self.client_socket.recvfrom(self.BUFF_SIZE)
+
+            packet = pickle.loads(packet_ser)
+
+            # TODO: receive total_frames and real_fps from the chat TCP socket only once
+            current_frame_no = packet["frame_nb"]
+            total_frames = packet["total_frames"]
+            real_fps = packet["fps"]
+            if not self.set_total_frames:
+                self.progressBar.setMinimum(0)
+                self.progressBar.setMaximum(total_frames)
+                self.set_total_frames = True
+
+            if self.slider_pressed is False:
+                self.progressBar.setValue(current_frame_no)
+
+            progress = self.frame_to_timestamp(current_frame_no, real_fps) + ' / ' \
+                       + self.frame_to_timestamp(total_frames, real_fps)
+            self.progresslabel.setText(progress)
+
+            data = base64.b64decode(packet["frame"], ' /')
             npdata = np.fromstring(data, dtype=np.uint8)
             frame = cv2.imdecode(npdata, 1)
 
@@ -162,6 +184,8 @@ class PlayVideo(QThread):
                     pass
             self.cnt += 1
 
+        # because of socket being non-blocking
+        # we must pass the error when not receiving frames (video is paused)
         except BlockingIOError:
             pass
         except Exception as e:
@@ -274,7 +298,7 @@ class MainWindow(QMainWindow):
         self.threadVideoPlay = PlayVideo(self.frame, self.fpsLabel, self.threadChat,
                                          self.playButton, self.stopButton,
                                          self.chat_socket, self.HEADER_LENGTH,
-                                         self.progressBar)
+                                         self.progressBar, self.progresslabel)
         self.threadVideoPlay.start()
 
     def startTcpChat(self):
