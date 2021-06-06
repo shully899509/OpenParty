@@ -57,5 +57,26 @@ requirements:  <br>
 	- imutils <br>
 	- [extern] ffmpeg pentru a extrage partea audio
 	
-fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, venv3 creat pentru Python 3.6	 
-  
+fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, venv3 creat pentru Python 3.6	<br>  
+<br><br>
+UPDATE (06-06): mutat pe libraria PyQt pentru a genera interfata <br>
+		server trimite la client frameuri video si sincronizeaza timestamp-ul si progress bar-ul <br>
+		server face host prin TCP pentru chat in care poate primi comenzi de la client pentru a le executa (play/pauza/skipto) <br>
+dependente curente:  <br>
+	- opencv-contrib-python 4.5.2.52 <br>
+	- imutils               0.5.4 <br>
+	- PyAudio               0.2.11 <br>
+	- PyQt5                 5.15.4 <br>
+	- PyQt5-stubs           5.15.2.0 <br>
+	<br>
+	(una din ele contine designer.exe pentru a contrui fisierele .ui) <br>
+	- pyqt5-tools           5.15.4.3.2 <br>
+	- qt5-applications      5.15.2.2.2 <br>
+	- qt5-tools             5.15.2.1.2 <br>
+	<br>
+	[extern] <br>
+	- ffplayer (pentru server ca sa genereze fisier audio) <br>
+	- Radmin VPN (pentru LAN virtual over network) <br>
+<br>
+fisiere folosite la rulare: "pyqt player.py", "pyqt player client.py" (momentan adresele clientilor sunt hardcodate) <br>
+
