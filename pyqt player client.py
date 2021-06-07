@@ -53,7 +53,7 @@ class PlayVideo(QThread):
         self.BUFF_SIZE = 65536
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
-        self.socket_address = ('192.168.0.106', 9689)
+        self.socket_address = ('192.168.0.106', 9689) # client ip
         print('Reading from:', self.socket_address)
         self.client_socket.bind(self.socket_address)
         self.client_socket.setblocking(False)
@@ -196,7 +196,7 @@ class TcpChat(QThread):
         self.chat_socket = chat_socket
         self.HEADER_LENGTH = HEADER_LENGHT
 
-        self.IP = "192.168.0.106"
+        self.IP = "192.168.0.106" # server ip to connect
         self.PORT = 1234
         # Connect to a given ip and port
         self.chat_socket.connect((self.IP, self.PORT))
@@ -271,7 +271,7 @@ class AudioRec(QThread):
         super().__init__()
 
         self.host_name = socket.gethostname()
-        self.host_ip = '192.168.0.106'  # socket.gethostbyname(host_name)
+        self.host_ip = '192.168.0.106'  # client ip
         print(self.host_ip)
         self.port = 9634
         # For details visit: www.pyshine.com

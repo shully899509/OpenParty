@@ -214,7 +214,7 @@ class PlayVideo(QThread):
                 # self.cnt += 1
 
                 # TODO: send the message to the list of clients stored from the TCP socket
-                client_addr_new1 = ('192.168.0.106', 9689)  # udp ip to local client
+                client_addr_new1 = ('26.14.157.60', 9689)  # client ip
                 client_addr_new2 = ('192.168.0.106', 9685)  # others
                 client_addr_new = [client_addr_new1, client_addr_new2]
                 for client in client_addr_new:
@@ -306,7 +306,7 @@ class LocalAudio(QThread):
         self.stopButton.clicked.connect(self.stopTimer)
 
         self.host_name = socket.gethostname()
-        self.host_ip = '192.168.0.106'  # socket.gethostbyname(host_name)
+        self.host_ip = '26.227.64.72'  # server ip
         print('audio host at ', self.host_ip)
         self.port = 9633
 
@@ -328,7 +328,7 @@ class LocalAudio(QThread):
         self.data = None
         self.sample_rate = self.wf.getframerate()
 
-        self.client_addr = ('192.168.0.106', 9634)
+        self.client_addr = ('26.14.157.60', 9634) # client ip
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.playAudio)
@@ -385,7 +385,7 @@ class TcpChat(QThread):
 
         self.HEADER_LENGTH = 10
 
-        self.IP = "192.168.0.106"
+        self.IP = "26.227.64.72" # server ip
         self.PORT = 1234
 
         # Create a socket
