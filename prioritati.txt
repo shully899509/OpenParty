@@ -1,14 +1,9 @@
-(maybe done) 2. trackbar pentru selectare pozitie a videoului
-	- de inlocuit cu trackbar in tkinter (SetTrackbarPos din cv2 prea costisitor)
-	- adaugat buton de play/pause la interfata si volum sunet
-	- adauga update client - server pentru play/pause si pozitie trackbar
+(done) 2. trackbar pentru selectare pozitie a videoului
 
 - audio si video decalat (audio inaintea videoului)
-- audio numai de la client (crash cand rulez audio local si client in acelasi timp)
-	-> se poate porni server si client simultan pe masina serverului (elimina bug-ul cu stream oprit cand facem drag la window)
-
-(partially done with chatbox in TCP sockets) - trimis comenzi de la client la server (play/pause si pozitie video)
-	-> unele mesaje translatate in comenzi catre server
+(done) - audio numai de la client (crash cand rulez audio local si client in acelasi timp)
+(done) - trimis comenzi de la client la server (play/pause si pozitie video)
+(done)	-> unele mesaje translatate in comenzi catre server
 
 
 
@@ -26,6 +21,6 @@
 
 
 
-5(o). chatbox
+(partially) 5(o). chatbox
 	-> trebuie updatati clientii in real time
 

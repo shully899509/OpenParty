@@ -79,7 +79,7 @@ def getFrame(frame_nr):
     vid.set(cv2.CAP_PROP_POS_FRAMES, frame_nr)
 
 
-filename = 'vids\\monty.mp4'
+filename = 'app/server/vids\\monty.mp4'
 command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(filename, 'temp.wav')
 os.system(command)
 

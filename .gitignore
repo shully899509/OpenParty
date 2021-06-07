@@ -4,9 +4,8 @@ __pycache__/
 *$py.class
 
 # Video files
-vids/soccer.avi
-vids/surf.mp4
-vids/surf2.mp4
+app/server/vids
+app/server/temp.wav
 temp.wav
 
 # C extensions
