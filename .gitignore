@@ -7,6 +7,7 @@ __pycache__/
 vids/soccer.avi
 vids/surf.mp4
 vids/surf2.mp4
+temp.wav
 
 # C extensions
 *.so
