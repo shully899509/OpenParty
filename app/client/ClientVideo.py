@@ -38,12 +38,12 @@ class PlayVideo(QThread):
         self.fps, self.st, self.frames_to_count, self.cnt = (0, 0, 20, 0)
 
         self.BUFF_SIZE = 65536
-        self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
+        self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.video_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
         self.socket_address = ('192.168.0.106', 9685)  # client ip
-        print('Reading from:', self.socket_address)
-        self.client_socket.bind(self.socket_address)
-        self.client_socket.setblocking(False)
+        print('Reading frames from:', self.socket_address)
+        self.video_socket.bind(self.socket_address)
+        self.video_socket.setblocking(False)
 
         self.progressBar.sliderPressed.connect(self.when_slider_pressed)
         self.progressBar.sliderReleased.connect(self.move_progress_bar)
@@ -57,8 +57,8 @@ class PlayVideo(QThread):
         return str(timedelta(seconds=(frame / fps)))
 
     def send_message(self, message):
-        message = '{}: {}'.format(self.threadChat.nickname, message)
-        self.chat_socket.send(message.encode('ascii'))
+        user_msg = pickle.dumps({"user": self.threadChat.nickname, "msg": message})
+        self.chat_socket.send(user_msg)
 
     def play_timer(self):
         # start timer
@@ -78,7 +78,7 @@ class PlayVideo(QThread):
 
     def play_video(self):
         try:
-            packet_ser, _ = self.client_socket.recvfrom(self.BUFF_SIZE)
+            packet_ser, _ = self.video_socket.recvfrom(self.BUFF_SIZE)
 
             packet = pickle.loads(packet_ser)
 
@@ -88,10 +88,10 @@ class PlayVideo(QThread):
             current_frame_no = packet["frame_nb"]
             total_frames = packet["total_frames"]
             real_fps = packet["fps"]
-            if not self.set_total_frames:
-                self.progressBar.setMinimum(0)
-                self.progressBar.setMaximum(total_frames)
-                self.set_total_frames = True
+            # if not self.set_total_frames:
+            self.progressBar.setMinimum(0)
+            self.progressBar.setMaximum(total_frames)
+                # self.set_total_frames = True
 
             if self.slider_pressed is False:
                 self.progressBar.setValue(current_frame_no)

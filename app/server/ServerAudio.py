@@ -102,17 +102,16 @@ class LocalAudio(QThread):
         try:
             self.timer.stop()
             value = self.progressBar.value()
-            time.sleep(0.05)
+            # time.sleep(0.05)
+            self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
             if not self.is_paused:
                 self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
-
-            self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
             # print('skipped to ', (value/25))
         except Exception as e:
             logging.error(e)
 
     def move_slider_client(self, value):
-        time.sleep(0.05)
+        # time.sleep(0.05)
         self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
 
     def play_audio(self):

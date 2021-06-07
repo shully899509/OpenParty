@@ -1,7 +1,10 @@
+import pickle
 import socket
 from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
 import threading
+import logging
 
+logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 class TcpChat(QThread):
     def __init__(self, threadVideoPlay, threadAudioPlay):
@@ -22,23 +25,46 @@ class TcpChat(QThread):
         print(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
 
     def broadcast(self, message):  # broadcast function declaration
+        msg = pickle.dumps({"user": 'server', "msg": message})
         for client in self.clients:
-            client.send(message)
+            client.send(msg)
+
 
     def handle(self, client):
         while True:
             try:  # recieving valid messages from client
-                message = client.recv(1024)
-                self.broadcast(message)
+                user_msg = pickle.loads(client.recv(1024))
+                command = user_msg["msg"]
+                self.broadcast('{}: {}'.format(user_msg["user"], command))
+                print('{}: {}'.format(user_msg["user"], command))
 
-                command = message.decode('ascii')
-                print(command)
+                if command == '/play':
+                    self.threadVideoPlay.playSignal.emit()
+                    self.threadAudioPlay.playSignal.emit()
+                elif command == '/pause':
+                    self.threadVideoPlay.stopSignal.emit()
+                    self.threadAudioPlay.stopSignal.emit()
+                elif command[:7] == '/skipto':
+                    try:
+                        frame_nb = int(command[8:])
+                        video_was_paused = self.threadVideoPlay.is_paused
+                        self.threadVideoPlay.stopSignal.emit()
+                        self.threadAudioPlay.stopSignal.emit()
+                        self.threadVideoPlay.move_progress_bar_client(frame_nb)
+                        self.threadAudioPlay.move_slider_client(frame_nb)
+                        if not video_was_paused:
+                            self.threadVideoPlay.playSignal.emit()
+                            self.threadAudioPlay.playSignal.emit()
+                    except Exception as e:
+                        logging.error('Error reading frame skip command\n', e)
+
             except:  # removing clients
                 index = self.clients.index(client)
                 self.clients.remove(client)
                 client.close()
                 nickname = self.nicknames[index]
-                self.broadcast('{} left!'.format(nickname).encode('ascii'))
+                self.broadcast('{} left!'.format(nickname))
+                print('{} left!'.format(nickname))
                 self.nicknames.remove(nickname)
                 break
 
@@ -46,13 +72,13 @@ class TcpChat(QThread):
         while True:
             client, address = self.server.accept()
             print("Connected with {}".format(str(address)))
-            client.send('NICKNAME'.encode('ascii'))
-            nickname = client.recv(1024).decode('ascii')
+            client.send(pickle.dumps({"msg": 'NICKNAME'}))
+            nickname = pickle.loads(client.recv(1024))["msg"]
             self.nicknames.append(nickname)
             self.clients.append(client)
             print("Nickname is {}".format(nickname))
-            self.broadcast("{} joined!".format(nickname).encode('ascii'))
-            client.send('Connected to server!'.encode('ascii'))
+            self.broadcast("{} joined!".format(nickname))
+            client.send(pickle.dumps({"msg": 'Connected to server!'}))
             thread = threading.Thread(target=self.handle, args=(client,))
             thread.start()
 

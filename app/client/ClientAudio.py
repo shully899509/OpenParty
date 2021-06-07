@@ -15,7 +15,7 @@ class AudioRec(QThread):
         self.host_name = socket.gethostname()
         self.host_ip = '192.168.0.106'  # client ip
         print(self.host_ip)
-        self.port = 9631
+        self.port = 9634
         self.q = queue.Queue(maxsize=100)
 
         self.BUFF_SIZE = 65536

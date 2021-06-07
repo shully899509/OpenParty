@@ -11,10 +11,10 @@ import cv2
 import queue
 import os
 
-from app.server.VideoGen import VideoGen
-from app.server.ServerVideo import PlayVideo
-from app.server.ServerAudio import LocalAudio
-from app.server.ServerTcpChat import TcpChat
+from VideoGen import VideoGen
+from ServerVideo import PlayVideo
+from ServerAudio import LocalAudio
+from ServerTcpChat import TcpChat
 
 
 class MainWindow(QMainWindow):
@@ -25,7 +25,6 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('OpenParty Server')
         self.totalFrames = 0
         self.fps = 0
-        self.q = queue.Queue(maxsize=10)
         self.openButton.clicked.connect(self.open_file)
 
         self.threadVideoGen = QThread()
@@ -41,7 +40,7 @@ class MainWindow(QMainWindow):
     def start_video_play(self):
         self.threadVideoPlay = PlayVideo(self.cap, self.q, self.progresslabel, self.progressBar, self.frame,
                                          self.totalFrames, self.fps, self.playButton, self.stopButton,
-                                         self.fpsLabel)
+                                         self.fpsLabel, self.threadVideoGen)
         self.threadVideoPlay.start()
 
     def start_audio(self):
@@ -65,12 +64,13 @@ class MainWindow(QMainWindow):
         if self.threadAudio.isRunning():
             self.threadAudio.stopSignal.emit()
 
-        if self.threadVideoGen.isRunning():
-            self.threadVideoGen.destroy()
-        if self.threadVideoPlay.isRunning():
-            self.threadVideoPlay.destroy()
         if self.threadAudio.isRunning():
             self.threadAudio.destroy()
+        if self.threadVideoPlay.isRunning():
+            self.threadVideoPlay.destroy()
+        if self.threadVideoGen.isRunning():
+            self.threadVideoGen.destroy()
+
         self.threadVideoGen = QThread()
         self.threadVideoPlay = QThread()
         self.threadAudio = QThread()
@@ -79,16 +79,19 @@ class MainWindow(QMainWindow):
         self.file_name = list(self.videoFileName)[0]
         self.cap = cv2.VideoCapture(self.file_name)
         self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+        self.q = queue.Queue(maxsize=1000)
+        self.totalFrames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+
         print('Opening file {} with fps {}'.format(list(self.videoFileName)[0], self.fps))
 
         # extract and convert audio from the video file into a temp.wav to be sent
         command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
         os.system(command)
 
-        self.totalFrames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        self.start_audio()
+
         self.start_video_gen()
         self.start_video_play()
+        self.start_audio()
         self.start_tcp_chat()
 
     # when exiting the UI make sure the threads are closed properly

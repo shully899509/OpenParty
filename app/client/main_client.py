@@ -4,15 +4,14 @@
 import socket
 import sys
 
-
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QLabel, QGraphicsScene, QGraphicsView
 import logging, random, imutils
 import os
-from app.client.ClientVideo import PlayVideo
-from app.client.ClientAudio import AudioRec
-from app.client.ClientTcpChat import TcpChat
+from ClientVideo import PlayVideo
+from ClientAudio import AudioRec
+from ClientTcpChat import TcpChat
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
@@ -25,10 +24,10 @@ class MainWindow(QMainWindow):
         self.setWindowTitle('OpenParty Client')
         self.totalFrames = 0
         self.fps = 0
-        self.threadVideoGen = QThread()
-        self.threadVideoPlay = QThread()
-        self.threadAudio = QThread()
-        self.threadChat = QThread()
+        self.thread_video_gen = QThread()
+        self.thread_video_play = QThread()
+        self.thread_audio_play = QThread()
+        self.thread_chat = QThread()
         self.readHost.clicked.connect(self.start_all_threads)
 
         self.HEADER_LENGTH = 10
@@ -39,33 +38,33 @@ class MainWindow(QMainWindow):
         if not self.chat_started:
             self.start_tcp_chat()
             self.chat_started = True
-        if not self.threadAudio.isRunning():
+        if not self.thread_audio_play.isRunning():
             self.start_audio()
-        if not self.threadVideoPlay.isRunning():
+        if not self.thread_video_play.isRunning():
             self.start_video_play()
 
     def closeEvent(self, event):
         print('closed manually')
         self.chat_socket.close()
-        self.threadVideoPlay.terminate()
-        self.threadAudio.terminate()
-        self.threadChat.terminate()
+        self.thread_video_play.terminate()
+        self.thread_audio_play.terminate()
+        self.thread_chat.terminate()
         os._exit(1)
 
     def start_video_play(self):
-        self.threadVideoPlay = PlayVideo(self.frame, self.fpsLabel, self.threadChat,
-                                         self.playButton, self.stopButton,
-                                         self.chat_socket,
-                                         self.progressBar, self.progresslabel)
-        self.threadVideoPlay.start()
+        self.thread_video_play = PlayVideo(self.frame, self.fpsLabel, self.thread_chat,
+                                           self.playButton, self.stopButton,
+                                           self.chat_socket,
+                                           self.progressBar, self.progresslabel)
+        self.thread_video_play.start()
 
     def start_audio(self):
-        self.threadAudio = AudioRec()
-        self.threadAudio.start()
+        self.thread_audio_play = AudioRec()
+        self.thread_audio_play.start()
 
     def start_tcp_chat(self):
-        self.threadChat = TcpChat(self.chat_socket)
-        self.threadChat.start()
+        self.thread_chat = TcpChat(self.chat_socket)
+        self.thread_chat.start()
 
 
 app = QApplication(sys.argv)

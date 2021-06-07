@@ -26,9 +26,11 @@ class PlayVideo(QThread):
         self.deleteLater()
 
     def __init__(self, cap, q, progresslabel, progressBar, frame, totalFrames, fps,
-                 playButton, stopButton, fpsLabel):
+                 playButton, stopButton, fpsLabel, threadVideoGen):
 
         super().__init__()
+
+        self.threadVideoGen = threadVideoGen
 
         # signals used by TCP chat thread in order to play/pause the timer from the exterior
         self.playSignal.connect(self.play_timer)
@@ -50,6 +52,7 @@ class PlayVideo(QThread):
 
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(totalFrames)
+        self.progressBar.setValue(0)
 
         # timer to loop the frame displaying function
         self.timer = QTimer()
@@ -108,21 +111,38 @@ class PlayVideo(QThread):
     # when slider is released try to empty queue and move to selected frame number
     def move_progress_bar(self):
         try:
+            value = self.progressBar.value()
+
+            # stop video playback timer
             self.timer.stop()
-            for i in range(self.q.qsize()): self.q.get()
-            time.sleep(0.05)
+            # signal queue thread to stop generating
+            self.threadVideoGen.stop_q = True
+
+            # empty remaining frames stored in queue
+            while not self.q.empty():
+                # print(self.q.qsize())
+                self.q.get()
+
+            self.cap.set(1, value)
+            self.threadVideoGen.stop_q = False
+            self.slider_pressed = False
             if not self.is_paused:
                 self.timer.start(self.TS * 1000)
         except Exception as e:
             logging.error(e)
-        value = self.progressBar.value()
-        self.cap.set(1, value)
-        self.slider_pressed = False
 
     def move_progress_bar_client(self, value):
-        for i in range(self.q.qsize()): self.q.get()
-        time.sleep(0.05)
+        # timer for video playback is stopped and resumed in Tcp Chat class by the signal
+        # signal queue thread to stop generating
+        self.threadVideoGen.stop_q = True
+
+        # empty remaining frames stored in queue
+        while not self.q.empty():
+            # print(self.q.qsize())
+            self.q.get()
+
         self.cap.set(1, value)
+        self.threadVideoGen.stop_q = False
 
     # function for displaying and sending frames
     # will be ran in a loop using the timer to sync the FPS
@@ -136,8 +156,6 @@ class PlayVideo(QThread):
             progress = self.frame_to_timestamp(current_frame_no, self.fps) + ' / ' \
                        + self.frame_to_timestamp(self.totalFrames, self.fps)
             self.progresslabel.setText(progress)
-            # logging.info(current_frame)
-            # logging.info(threading.current_thread().ident)
 
             # stop updating slider in UI while clicked while continuing playback
             if self.slider_pressed is False:
@@ -175,15 +193,9 @@ class PlayVideo(QThread):
             # show image in UI frame label
             self.frame.setPixmap(QPixmap.fromImage(qImg))
 
-            # self.threadAudio.playAudioSignal.emit()
-
             # because frame processing time if fluctuating
             # we need to sync it to the FPS fetched from the metadata
             self.fpsLabel.setText(str(round(self.fps2, 1)))
-
-            # self.fps_mean += self.fps2
-            # self.fps_mean /= 2
-            # print(self.fps_mean)
 
             if self.cnt == self.frames_to_count:
                 try:
@@ -202,10 +214,3 @@ class PlayVideo(QThread):
 
             # restart and update timer with new TS
             self.timer.start(self.TS * 1000)
-
-        else:
-            print('return false')
-            progress = str(current_frame_no) + ' / ' \
-                       + str(self.totalFrames)
-            self.progresslabel.setText(progress)
-            self.progressBar.setValue(current_frame_no)

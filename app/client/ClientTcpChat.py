@@ -1,6 +1,9 @@
+import pickle
+
 from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
 import logging
 import threading
+
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
@@ -16,11 +19,12 @@ class TcpChat(QThread):
     def receive(self):
         while True:  # making valid connection
             try:
-                message = self.client.recv(1024).decode('ascii')
-                if message == 'NICKNAME':
-                    self.client.send(self.nickname.encode('ascii'))
+                user_msg = pickle.loads(self.client.recv(1024))
+                if user_msg["msg"] == 'NICKNAME':
+                    self.client.send(pickle.dumps({"msg": self.nickname}))
                 else:
-                    print(message)  # received in bytes
+                    print(user_msg["msg"])  # received in bytes
+                    pass
             except Exception as e:  # case on wrong ip/port details
                 print("An error occured on the server side!")
                 logging.error(e)
@@ -29,8 +33,13 @@ class TcpChat(QThread):
 
     def write(self):
         while True:  # message layout
-            message = '{}: {}'.format(self.nickname, input(''))
-            self.client.send(message.encode('ascii'))
+            try:
+                user = self.nickname
+                message = input('')
+                user_msg = pickle.dumps({"user": user, "msg": message})
+                self.client.send(user_msg)
+            except Exception as e:
+                logging.error(e)
 
     def run(self):
         receive_thread = threading.Thread(target=self.receive)  # receiving multiple messages
