@@ -64,6 +64,11 @@ class TcpChat(QThread):
                 index = self.clients.index(client)
                 self.clients.remove(client)
                 client.close()
+
+                clients_address = [client.getpeername()[0] for client in self.clients]
+                self.threadVideoPlay.update_clients(clients_address)
+                self.threadAudioPlay.update_clients(clients_address)
+
                 nickname = self.nicknames[index]
                 self.broadcast('{} left!'.format(nickname))
                 print('{} left!'.format(nickname))
@@ -79,7 +84,7 @@ class TcpChat(QThread):
             self.nicknames.append(nickname)
             self.clients.append(client)
 
-            print(client.getpeername()[0])
+            # print(client.getpeername()[0])
             clients_address = [client.getpeername()[0] for client in self.clients]
             self.threadVideoPlay.update_clients(clients_address)
             self.threadAudioPlay.update_clients(clients_address)
