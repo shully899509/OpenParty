@@ -1,6 +1,6 @@
 import pickle
 
-from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QThread
 import logging
 import threading
 
@@ -9,12 +9,13 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
 class TcpChat(QThread):
-    def __init__(self, chat_socket):
+    def __init__(self, chat_socket, host_ip):
         super().__init__()
-        self.nickname = 'test_user'  # input("Choose your nickname: ")
+        # self.nickname = 'test_user'
+        self.nickname = input("Choose your nickname: ")
 
         self.client = chat_socket
-        self.client.connect(('192.168.0.106', 7976))  # connecting client to server
+        self.client.connect((host_ip, 7976))  # connecting client to server
 
     def receive(self):
         while True:  # making valid connection

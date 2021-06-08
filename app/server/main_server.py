@@ -1,20 +1,26 @@
-# TODO: (needs sync) send audio packets through UDP socket and sync with video
+# DONE: (needs sync) send audio packets through UDP socket and sync with video
 # DONE: move code into separate .py files for each module
 # TODO: replace send frames to hardcoded client addresses with list of addresses from chat TCP connection
 # DONE: fix crash when trying to open another video
 # DONE: fix TCP chat so it updates all clients when receiving message
 import sys
+
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QScrollArea
 import cv2
 import queue
 import os
+import psutil
+from pycaw.pycaw import AudioUtilities
+import logging
 
 from VideoGen import VideoGen
 from ServerVideo import PlayVideo
 from ServerAudio import LocalAudio
 from ServerTcpChat import TcpChat
+
+logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
 class MainWindow(QMainWindow):
@@ -32,22 +38,30 @@ class MainWindow(QMainWindow):
         self.threadAudio = QThread()
         self.threadChat = QThread()
 
+        self.volumeSlider.setMinimum(0)
+        self.volumeSlider.setMaximum(100)
+        self.volumeSlider.setValue(50)
+        self.volumeSlider.sliderReleased.connect(self.set_volume)
+
+        self.process_name = psutil.Process(os.getpid()).name()
+        self.volume_set = False
+
     # initialize threads for each component
     def start_video_gen(self):
         self.threadVideoGen = VideoGen(self.cap, self.q)
         self.threadVideoGen.start()
-
-    def start_video_play(self):
-        self.threadVideoPlay = PlayVideo(self.cap, self.q, self.progresslabel, self.progressBar, self.frame,
-                                         self.totalFrames, self.fps, self.playButton, self.stopButton,
-                                         self.fpsLabel, self.threadVideoGen)
-        self.threadVideoPlay.start()
 
     def start_audio(self):
         self.threadAudio = LocalAudio(self.playButton, self.stopButton,
                                       self.progressBar, self.audioProgressLabel,
                                       self.fps)
         self.threadAudio.start()
+
+    def start_video_play(self):
+        self.threadVideoPlay = PlayVideo(self.cap, self.q, self.progresslabel, self.progressBar, self.frame,
+                                         self.totalFrames, self.fps, self.playButton, self.stopButton,
+                                         self.fpsLabel, self.threadVideoGen, self.threadAudio)
+        self.threadVideoPlay.start()
 
     def start_tcp_chat(self):
         if not self.threadChat.isRunning():
@@ -88,11 +102,24 @@ class MainWindow(QMainWindow):
         command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
         os.system(command)
 
-
         self.start_video_gen()
-        self.start_video_play()
         self.start_audio()
+        self.start_video_play()
         self.start_tcp_chat()
+
+        for session in AudioUtilities.GetAllSessions():
+            if session.Process and session.Process.name() == self.process_name:
+                self.volume = session.SimpleAudioVolume
+                self.volume.SetMasterVolume(0.5, None)
+                self.volumeSlider.setValue(50)
+                self.volume_set = True
+
+    def set_volume(self):
+        if self.volume_set:
+            value = self.volumeSlider.value()
+            self.volume.SetMasterVolume(value / 100, None)
+        else:
+            self.volumeSlider.setValue(50)
 
     # when exiting the UI make sure the threads are closed properly
     def closeEvent(self, event):

@@ -30,7 +30,28 @@
     <property name="rightMargin">
      <number>20</number>
     </property>
-    <item row="4" column="0" colspan="3">
+    <item row="1" column="0">
+     <widget class="QPushButton" name="readHost">
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="0" colspan="3">
+     <widget class="QSlider" name="progressBar">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QPushButton" name="playButton">
+      <property name="text">
+       <string>Play</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0" colspan="3">
      <widget class="QLabel" name="progresslabel">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
@@ -65,27 +86,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="3" rowspan="6">
-     <widget class="QSlider" name="verticalSlider">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="3">
-     <widget class="QSlider" name="progressBar">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QPushButton" name="playButton">
-      <property name="text">
-       <string>Play</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="2">
      <widget class="QPushButton" name="stopButton">
       <property name="text">
@@ -93,17 +93,46 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
+    <item row="0" column="3" rowspan="9">
+     <widget class="QSlider" name="volumeSlider">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
      <widget class="QLabel" name="fpsLabel">
       <property name="text">
        <string>FPS</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="readHost">
+    <item row="4" column="0">
+     <widget class="QLineEdit" name="hostAddressBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text">
-       <string>Start</string>
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QLabel" name="hostIpLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Host IP Address</string>
       </property>
      </widget>
     </item>

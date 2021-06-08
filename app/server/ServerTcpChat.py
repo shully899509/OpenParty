@@ -1,6 +1,6 @@
 import pickle
 import socket
-from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QThread
 import threading
 import logging
 
@@ -12,7 +12,9 @@ class TcpChat(QThread):
         self.threadVideoPlay = threadVideoPlay
         self.threadAudioPlay = threadAudioPlay
 
-        self.IP = '192.168.0.106'  # LocalHost
+        self.host_name = socket.gethostname()
+        self.IP = socket.gethostbyname(self.host_name)
+            #'192.168.0.106'  # LocalHost
         self.PORT = 7976  # Choosing unreserved port
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # socket initialization
@@ -76,7 +78,13 @@ class TcpChat(QThread):
             nickname = pickle.loads(client.recv(1024))["msg"]
             self.nicknames.append(nickname)
             self.clients.append(client)
-            print("Nickname is {}".format(nickname))
+
+            print(client.getpeername()[0])
+            clients_address = [client.getpeername()[0] for client in self.clients]
+            self.threadVideoPlay.update_clients(clients_address)
+            self.threadAudioPlay.update_clients(clients_address)
+
+            print("Hello {}!".format(nickname))
             self.broadcast("{} joined!".format(nickname))
             client.send(pickle.dumps({"msg": 'Connected to server!'}))
             thread = threading.Thread(target=self.handle, args=(client,))

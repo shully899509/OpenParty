@@ -1,25 +1,9 @@
-import base64
-import os
 import socket
-import sys
-from PyQt5 import QtGui, QtCore, QtWidgets
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.uic import loadUi
-from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QLabel, QGraphicsScene, QGraphicsView
-import cv2
+from PyQt5.QtCore import QTimer, pyqtSignal, QThread
 from datetime import timedelta
-import queue
-import time
-import logging, random, imutils
+import logging
 import os
-import pyaudio, wave, subprocess
-import select
-import pickle
-import threading
-
-from PyQt5.QtCore import QRunnable, Qt, QThreadPool
-from pynput import keyboard
+import pyaudio, wave
 
 BASE_DIR = os.path.dirname(__file__)
 path = BASE_DIR.replace('\\'[0], '/')
@@ -62,6 +46,7 @@ class LocalAudio(QThread):
         self.host_ip = '192.168.0.106'  # server ip
         print('audio host at ', self.host_ip)
         self.port = 9633
+        self.client_port = 9634
 
         self.BUFF_SIZE = 65536
         self.audio_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -87,6 +72,12 @@ class LocalAudio(QThread):
         self.timer.timeout.connect(self.play_audio)
 
         self.total_frames = self.wf.getnframes()
+        self.current_second = 0
+
+        self.clients = []
+
+    def update_clients(self, clients):
+        self.clients = clients
 
     # restart the timer when play button is pressed
     def play_timer(self):
@@ -121,9 +112,14 @@ class LocalAudio(QThread):
 
         self.data = self.wf.readframes(self.CHUNK)
         current_position = self.wf.tell()
+        self.current_second = current_position / self.sample_rate
         progress = str(timedelta(seconds=(current_position / self.sample_rate))) + ' / ' \
                    + str(timedelta(seconds=(self.total_frames / self.sample_rate)))
         self.audioProgressLabel.setText(progress)
 
-        self.audio_socket.sendto(self.data, self.client_addr)
+        # self.audio_socket.sendto(self.data, self.client_addr)
+        for client in self.clients:
+            #print(client)
+            self.audio_socket.sendto(self.data, (client, self.client_port))
+            # client.send(self.data)
         self.stream.write(self.data)

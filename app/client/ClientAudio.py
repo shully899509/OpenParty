@@ -1,8 +1,8 @@
 import socket
-from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QTimer, QThread
 import queue
-import logging, random, imutils
-import pyaudio, wave, subprocess
+import logging
+import pyaudio
 import threading
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
@@ -13,15 +13,16 @@ class AudioRec(QThread):
         super().__init__()
 
         self.host_name = socket.gethostname()
-        self.host_ip = '192.168.0.106'  # client ip
-        print(self.host_ip)
+        #self.host_ip = '192.168.0.106'  # client ip
+        self.host_ip = socket.gethostbyname(self.host_name)
         self.port = 9634
+        self.socket_address = (self.host_ip, self.port)
+
         self.q = queue.Queue(maxsize=100)
 
         self.BUFF_SIZE = 65536
         self.audio_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.audio_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
-        self.socket_address = (self.host_ip, self.port)
         self.audio_socket.bind(self.socket_address)
         self.p = pyaudio.PyAudio()
         self.CHUNK = 1024

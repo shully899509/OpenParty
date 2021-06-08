@@ -3,11 +3,11 @@ import socket
 
 import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QTimer, QThread
 import cv2
 from datetime import timedelta
 import time
-import logging, random, imutils
+import logging
 import pickle
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
@@ -40,8 +40,13 @@ class PlayVideo(QThread):
         self.BUFF_SIZE = 65536
         self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.video_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
-        self.socket_address = ('192.168.0.106', 9685)  # client ip
-        print('Reading frames from:', self.socket_address)
+
+        self.host_name = socket.gethostname()
+        # self.host_ip = '192.168.0.106'  # client ip
+        self.host_ip = socket.gethostbyname(self.host_name)
+        self.port = 9689
+        self.socket_address = (self.host_ip, self.port)  # client ip
+
         self.video_socket.bind(self.socket_address)
         self.video_socket.setblocking(False)
 
@@ -126,7 +131,7 @@ class PlayVideo(QThread):
             self.cnt += 1
 
         # because of socket being non-blocking
-        # we must pass the error when not receiving frames (video is paused)
+        # we must pass the error when not receiving frames (video is paused or datagram lost)
         except BlockingIOError:
             pass
         except Exception as e:

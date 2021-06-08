@@ -1,6 +1,6 @@
-from PyQt5.QtCore import pyqtSlot, QTimer, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import QThread
 import cv2
-import logging, random, imutils
+import logging, imutils
 import os
 
 BASE_DIR = os.path.dirname(__file__)
@@ -27,7 +27,7 @@ class VideoGen(QThread):
     #     self.stop_q = False
 
     def run(self):
-        # set how much pixels should be sent using the UDP socket
+        # set how much pixels should the frame be resized to be sent to UDP clients
         # too much will cause lag because of too large packets
         WIDTH = 600
 
@@ -40,8 +40,6 @@ class VideoGen(QThread):
                     current_frame = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
 
                     ret, frame = self.cap.read()
-                    # frame = imutils.resize(frame, width=WIDTH)
-                    # print('adding frame to queue')
 
                     frame = imutils.resize(frame, width=WIDTH)
                     self.q.put((ret, frame, current_frame))
@@ -50,7 +48,7 @@ class VideoGen(QThread):
                     # frame_no += 1
                     # print('after add frame')
             except Exception as e:
-                logging.error(e)
-                break
+                logging.error('Error in frame generation: {}'.format(e))
+                #break
         print('Player closed')
         self.cap.release()
