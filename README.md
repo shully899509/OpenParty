@@ -62,12 +62,22 @@ fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, ve
 UPDATE (06-06): mutat pe libraria PyQt pentru a genera interfata <br>
 		server trimite la client frameuri video si sincronizeaza timestamp-ul si progress bar-ul <br>
 		server face host prin TCP pentru chat in care poate primi comenzi de la client pentru a le executa (play/pauza/skipto) <br>
+<br>
+fisiere folosite la rulare: "pyqt player.py", "pyqt player client.py" (momentan adresele clientilor sunt hardcodate) <br>
+<br><br><br>
+UPDATE (09-06): impartit cod client si server pe module <br>
+		sync pe video si audio <br>
+		ip-urile hardcodate au fost inlocuite cu gethostbyname si lista de clienti primite cand se face conectarea la chat in TCP <br>
+<br>
 dependente curente:  <br>
-	- opencv-contrib-python 4.5.2.52 <br>
-	- imutils               0.5.4 <br>
-	- PyAudio               0.2.11 <br>
-	- PyQt5                 5.15.4 <br>
+	- opencv-contrib-python 4.5.2.52 --> pentru extras frame-uri din fisier video <br>
+	- imutils               0.5.4    --> pentru a face resize la frame-uri <br>
+	- PyAudio               0.2.11   --> stream la audio pe chunk-uri <br>
+	- PyQt5                 5.15.4 	 --> interfata si QThreads <br>
 	- PyQt5-stubs           5.15.2.0 <br>
+	- psutil                5.8.0    <br>
+	- pycaw                 20181226 --> control volum la nivel de windows API <br>
+	- pyinstaller           4.3 	 --> pentru a compila executabile din codul sursa <br>
 	<br>
 	(una din ele contine designer.exe pentru a contrui fisierele .ui) <br>
 	- pyqt5-tools           5.15.4.3.2 <br>
@@ -76,7 +86,11 @@ dependente curente:  <br>
 	<br>
 	[extern] <br>
 	- ffplayer (pentru server ca sa genereze fisier audio) <br>
-	- Radmin VPN (pentru LAN virtual over network) <br>
+	- Radmin VPN (pentru LAN virtual) <br>
+fisiere folosite la rulare: "app/server/main_server.py", "app/server/main_client.py" <br>
+"pyinstaller --onefile <main_module>.py" ca sa generam executabilele pentru client si server (trebuie copiate fisierele .ui manual in acelasi director) <br>
 <br>
-fisiere folosite la rulare: "pyqt player.py", "pyqt player client.py" (momentan adresele clientilor sunt hardcodate) <br>
-
+> in cazul in care primim o eroare "pyinstaller AttributeError: module 'enum' has no attribute 'IntFlag'" atunci trebuie dezinstalat un modul <br>
+> pip uninstall -y enum34 <br>
+(probabil a fost instalat de o librarie folosita si nu e compatibil cu python 3.6) <br>
+https://stackoverflow.com/questions/43124775/why-python-3-6-1-throws-attributeerror-module-enum-has-no-attribute-intflag <br>
