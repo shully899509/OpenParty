@@ -44,8 +44,6 @@ class MainWindow(QMainWindow):
         self.process_name = psutil.Process(os.getpid()).name()
         self.volume_set = False
 
-        self.host_ip = self.hostAddressBox.text()
-
     def start_all_threads(self):
         if not self.chat_started:
             print('Trying connection to {}'.format(self.hostAddressBox.text()))
@@ -75,16 +73,15 @@ class MainWindow(QMainWindow):
         self.thread_video_play = PlayVideo(self.frame, self.fpsLabel, self.thread_chat,
                                            self.playButton, self.stopButton,
                                            self.chat_socket,
-                                           self.progressBar, self.progresslabel, self.host_ip)
+                                           self.progressBar, self.progresslabel, self.hostAddressBox.text())
         self.thread_video_play.start()
 
     def start_audio(self):
-        self.thread_audio_play = AudioRec(self.host_ip)
+        self.thread_audio_play = AudioRec(self.hostAddressBox.text())
         self.thread_audio_play.start()
 
     def start_tcp_chat(self):
-
-        self.thread_chat = TcpChat(self.chat_socket, self.host_ip)
+        self.thread_chat = TcpChat(self.chat_socket, self.hostAddressBox.text())
         self.thread_chat.start()
 
     def set_volume(self):
