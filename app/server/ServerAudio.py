@@ -44,7 +44,6 @@ class LocalAudio(QThread):
 
         self.host_name = socket.gethostname()
         self.host_ip = socket.gethostbyname(self.host_name)
-        # self.host_ip = '192.168.0.106'  # server ip
 
         print('audio host at ', self.host_ip)
         self.port = 9633
@@ -77,6 +76,7 @@ class LocalAudio(QThread):
         self.current_second = 0
 
         self.clients = []
+        self.is_paused = True
 
     def update_clients(self, clients):
         self.clients = clients
@@ -95,7 +95,6 @@ class LocalAudio(QThread):
         try:
             self.timer.stop()
             value = self.progressBar.value()
-            # time.sleep(0.05)
             self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
             if not self.is_paused:
                 self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
@@ -104,7 +103,6 @@ class LocalAudio(QThread):
             logging.error(e)
 
     def move_slider_client(self, value):
-        # time.sleep(0.05)
         self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
 
     def play_audio(self):
@@ -112,16 +110,16 @@ class LocalAudio(QThread):
         #                                                    self.sample_rate,
         #                                                    self.wf.tell()/self.sample_rate))
 
-        self.data = self.wf.readframes(self.CHUNK)
-        current_position = self.wf.tell()
-        self.current_second = current_position / self.sample_rate
-        progress = str(timedelta(seconds=(current_position / self.sample_rate))) + ' / ' \
-                   + str(timedelta(seconds=(self.total_frames / self.sample_rate)))
-        self.audioProgressLabel.setText(progress)
+        try:
+            self.data = self.wf.readframes(self.CHUNK)
+            current_position = self.wf.tell()
+            self.current_second = current_position / self.sample_rate
+            progress = str(timedelta(seconds=(current_position / self.sample_rate))) + ' / ' \
+                       + str(timedelta(seconds=(self.total_frames / self.sample_rate)))
+            self.audioProgressLabel.setText(progress)
 
-        # self.audio_socket.sendto(self.data, self.client_addr)
-        for client in self.clients:
-            #print(client)
-            self.audio_socket.sendto(self.data, (client, self.client_port))
-            # client.send(self.data)
-        self.stream.write(self.data)
+            for client in self.clients:
+                self.audio_socket.sendto(self.data, (client, self.client_port))
+            # self.stream.write(self.data)
+        except Exception as e:
+            logging.error('audio: {}'.format(e))

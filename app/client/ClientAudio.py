@@ -9,16 +9,18 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
 class AudioRec(QThread):
-    def __init__(self, host_ip):
+    def __init__(self):
         super().__init__()
 
         self.host_name = socket.gethostname()
-        # self.host_ip = '192.168.0.104'  # client ip
         self.host_ip = socket.gethostbyname(self.host_name)
         self.port = 9634
         self.socket_address = (self.host_ip, self.port)
 
-        self.q = queue.Queue(maxsize=100)
+        # a maxsize 100 will be ideal but lags with video at the moment
+        # must send frames from server VideoGen and make sync in client
+        # using audio and frame timestamps
+        self.q = queue.Queue(maxsize=5)
 
         self.BUFF_SIZE = 65536
         self.audio_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -38,7 +40,7 @@ class AudioRec(QThread):
 
         t1 = threading.Thread(target=self.get_audio_data, args=())
         t1.start()
-        print('Now Playing...')
+        print('Listening for audio...')
 
     def get_audio_data(self):
         while True:

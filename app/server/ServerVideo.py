@@ -47,8 +47,8 @@ class PlayVideo(QThread):
         self.progressBar = progressBar
         self.frame = frame
         self.totalFrames = totalFrames
-        self.fps = fps
-        self.TS = (0.5 / self.fps)
+        self.fps_metadata = fps
+        self.frame_freq = (0.5 / self.fps_metadata)
 
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(totalFrames)
@@ -57,7 +57,6 @@ class PlayVideo(QThread):
         # timer to loop the frame displaying function
         self.timer = QTimer()
         self.timer.timeout.connect(self.play_video)
-        # self.timer.start(self.TS * 1000)
 
         # bind play/pause buttons
         self.playButton.clicked.connect(self.play_timer)
@@ -68,8 +67,8 @@ class PlayVideo(QThread):
         self.progressBar.sliderPressed.connect(self.when_slider_pressed)
         self.progressBar.sliderReleased.connect(self.move_progress_bar)
 
-        # properties to sync the FPS with how fast the frames are processed
-        self.fps2 = 0
+        # properties to sync the metadata FPS with how fast the frames are processed
+        self.fps_actual = 0
         self.st = 0
         self.frames_to_count = 1
         self.cnt = 0
@@ -104,7 +103,7 @@ class PlayVideo(QThread):
 
     # restart the timer when play button is pressed
     def play_timer(self):
-        self.timer.start(self.TS * 1000)
+        self.timer.start(self.frame_freq * 1000)
         self.is_paused = False
 
     # stop the timer when pause button is pressed
@@ -135,7 +134,7 @@ class PlayVideo(QThread):
             self.threadVideoGen.stop_q = False
             self.slider_pressed = False
             if not self.is_paused:
-                self.timer.start(self.TS * 1000)
+                self.timer.start(self.frame_freq * 1000)
         except Exception as e:
             logging.error(e)
 
@@ -162,11 +161,11 @@ class PlayVideo(QThread):
             # if self.cnt == 1: print(frame)
 
             if ret is True:
-                progress = self.frame_to_timestamp(current_frame_no, self.fps) + ' / ' \
-                           + self.frame_to_timestamp(self.totalFrames, self.fps)
+                progress = self.frame_to_timestamp(current_frame_no, self.fps_metadata) + ' / ' \
+                           + self.frame_to_timestamp(self.totalFrames, self.fps_metadata)
                 self.progresslabel.setText(progress)
 
-                self.current_second = current_frame_no / self.fps
+                self.current_second = current_frame_no / self.fps_metadata
 
                 # stop updating slider in UI while clicked while continuing playback
                 if self.slider_pressed is False:
@@ -180,62 +179,54 @@ class PlayVideo(QThread):
                     msg_pair = {"frame_nb": current_frame_no,
                                 "total_frames": self.totalFrames,
                                 "frame": encoded_frame,
-                                "fps": self.fps}
+                                "fps": self.fps_metadata}
                     packed_message = pickle.dumps(msg_pair)
-
-                    # TODO: send the message to the list of clients stored from the TCP socket
-                    # client_addr_new1 = ('192.168.0.106', 9689)  # client ip
-                    # client_addr_new2 = ('192.168.0.106', 9685)  # others
-                    # client_addr_new = [client_addr_new1, client_addr_new2]
-                    # for client in client_addr_new:
-                    #     self.server_socket.sendto(packed_message, client)
 
                     for client in self.clients:
                         self.server_socket.sendto(packed_message, (client, self.client_port))
-                        # client.send(packed_message)
                 except Exception as e:
-                    logging.error(e)
+                    logging.error('video: {}'.format(e))
 
-                # convert image to RGB format
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                # get image infos
-                height, width, channel = frame.shape
-                # print(height, width, channel)
-                step = channel * width
-                # create QImage from image
-                qImg = QImage(frame.data, width, height, step, QImage.Format_RGB888)
-
-                # show image in UI frame label
-                self.frame.setPixmap(QPixmap.fromImage(qImg))
+                # # convert image to RGB format
+                # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # # get image infos
+                # height, width, channel = frame.shape
+                # # print(height, width, channel)
+                # step = channel * width
+                # # create QImage from image
+                # qImg = QImage(frame.data, width, height, step, QImage.Format_RGB888)
+                #
+                # # show image in UI frame label
+                # self.frame.setPixmap(QPixmap.fromImage(qImg))
 
                 # because frame processing time if fluctuating
                 # we need to sync it to the FPS fetched from the metadata
-                self.fpsLabel.setText(str(round(self.fps2, 1)))
 
-                # print(self.current_second - self.threadAudio.current_second)
-                # print(self.TS)
-
-                if self.current_second < self.threadAudio.current_second and self.TS > 0:
-                    self.TS -= 0.001
+                # sync with audio timestamp
+                if self.current_second < self.threadAudio.current_second and self.frame_freq > 0:
+                    self.frame_freq -= 0.001
                 elif self.current_second > self.threadAudio.current_second:
-                    self.TS += 0.001
+                    self.frame_freq += 0.001
 
+                # sync with metadata fps
                 if self.cnt == self.frames_to_count:
                     try:
-                        self.fps2 = (self.frames_to_count / (time.time() - self.st))
+                        self.fps_actual = (self.frames_to_count / (time.time() - self.st))
                         self.st = time.time()
                         self.cnt = 0
-                        if self.fps2 > self.fps:
-                            self.TS += 0.001
-                        elif self.fps2 < self.fps and self.TS > 0:
-                            self.TS -= 0.001
+                        if self.fps_actual > self.fps_metadata:
+                            self.frame_freq += 0.001
+                        elif self.fps_actual < self.fps_metadata and self.frame_freq > 0:
+                            self.frame_freq -= 0.001
                         else:
                             pass
                     except Exception as e:
                         print(e)
                 self.cnt += 1
 
-                # restart and update timer with new TS
-                self.timer.start(self.TS * 1000)
+                self.fpsLabel.setText(str(round(self.fps_actual, 1)))
+
+                # restart and update timer with new frame frequency
+                self.timer.start(self.frame_freq * 1000)
         except Exception as e:
             logging.error(e)

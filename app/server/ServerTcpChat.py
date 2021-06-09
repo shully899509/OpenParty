@@ -23,6 +23,7 @@ class TcpChat(QThread):
 
         self.clients = []
         self.nicknames = []
+        self.clients_address = []
 
         print(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
 
@@ -84,10 +85,9 @@ class TcpChat(QThread):
             self.nicknames.append(nickname)
             self.clients.append(client)
 
-            # print(client.getpeername()[0])
-            clients_address = [client.getpeername()[0] for client in self.clients]
-            self.threadVideoPlay.update_clients(clients_address)
-            self.threadAudioPlay.update_clients(clients_address)
+            self.clients_address = [client.getpeername()[0] for client in self.clients]
+            self.threadVideoPlay.update_clients(self.clients_address)
+            self.threadAudioPlay.update_clients(self.clients_address)
 
             print("Hello {}!".format(nickname))
             self.broadcast("{} joined!".format(nickname))
@@ -98,6 +98,8 @@ class TcpChat(QThread):
     def update_threads(self, video_thread, audio_thread):
         self.threadVideoPlay = video_thread
         self.threadAudioPlay = audio_thread
+        self.threadVideoPlay.update_clients(self.clients_address)
+        self.threadAudioPlay.update_clients(self.clients_address)
 
     def run(self):
         self.receive()

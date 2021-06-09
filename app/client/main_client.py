@@ -73,11 +73,11 @@ class MainWindow(QMainWindow):
         self.thread_video_play = PlayVideo(self.frame, self.fpsLabel, self.thread_chat,
                                            self.playButton, self.stopButton,
                                            self.chat_socket,
-                                           self.progressBar, self.progresslabel, self.hostAddressBox.text())
+                                           self.progressBar, self.progresslabel)
         self.thread_video_play.start()
 
     def start_audio(self):
-        self.thread_audio_play = AudioRec(self.hostAddressBox.text())
+        self.thread_audio_play = AudioRec()
         self.thread_audio_play.start()
 
     def start_tcp_chat(self):

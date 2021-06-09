@@ -20,16 +20,12 @@ class VideoGen(QThread):
         self.terminate()
         self.deleteLater()
 
-    # def set_q_stop_t(self):
-    #     self.stop_q = True
-    #
-    # def set_q_stop_f(self):
-    #     self.stop_q = False
-
     def run(self):
         # set how much pixels should the frame be resized to be sent to UDP clients
-        # too much will cause lag because of too large packets
-        WIDTH = 600
+        # too much will cause lag because of UDP packets exceeding max size
+        # could set here as parameters for quality in server UI
+        WIDTH = 320
+        HEIGHT = 240
 
         while self.cap.isOpened():
             try:
@@ -37,18 +33,16 @@ class VideoGen(QThread):
                 #     print('queue is stopped')
                 while not self.stop_q:
                     # to be used for updating the slider position
-                    current_frame = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+                    current_frame_nb = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
 
                     ret, frame = self.cap.read()
 
-                    frame = imutils.resize(frame, width=WIDTH)
-                    self.q.put((ret, frame, current_frame))
-                    # logging.info('{} {}'.format('insert into q ', current_frame))
-                    # print('sent frame: ', self.q.qsize())
-                    # frame_no += 1
-                    # print('after add frame')
+                    frame = imutils.resize(frame, width=WIDTH, height=HEIGHT)
+                    self.q.put((ret, frame, current_frame_nb))
+            except AttributeError as e:
+                if str(e) == "'NoneType' object has no attribute 'shape'":
+                    logging.error('Frame not found')
             except Exception as e:
                 logging.error('Error in frame generation: {}'.format(e))
-                #break
         print('Player closed')
         self.cap.release()
