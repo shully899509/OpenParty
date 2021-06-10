@@ -121,7 +121,7 @@ class MainWindow(QMainWindow):
         else:
             self.volumeSlider.setValue(50)
 
-    # when exiting the UI make sure the threads are closed properly
+    # when exiting the UI make sure the threads are closed
     def closeEvent(self, event):
         print('closed manually')
         if self.threadVideoGen.isRunning():

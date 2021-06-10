@@ -24,6 +24,7 @@ class VideoGen(QThread):
         # set how much pixels should the frame be resized to be sent to UDP clients
         # too much will cause lag because of UDP packets exceeding max size
         # could set here as parameters for quality in server UI
+        # also consider splitting each frame and reconstructing it in client side
         WIDTH = 320
         HEIGHT = 240
 

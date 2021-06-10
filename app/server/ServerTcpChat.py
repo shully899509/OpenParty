@@ -6,6 +6,7 @@ import logging
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
+# source: https://hackernoon.com/creating-command-line-based-chat-room-using-python-oxu3u33
 class TcpChat(QThread):
     def __init__(self, threadVideoPlay, threadAudioPlay):
         super().__init__()

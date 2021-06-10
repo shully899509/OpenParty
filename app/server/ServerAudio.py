@@ -12,8 +12,6 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 
 class LocalAudio(QThread):
-    playAudioSignal = pyqtSignal()
-
     playSignal = pyqtSignal()
     stopSignal = pyqtSignal()
 
@@ -24,7 +22,6 @@ class LocalAudio(QThread):
     def __init__(self, playButton, stopButton, progressBar, audioProgressLabel, video_fps):
         super().__init__()
 
-        self.playAudioSignal.connect(self.play_audio)
         self.audioProgressLabel = audioProgressLabel
         self.video_fps = video_fps
 
@@ -120,6 +117,6 @@ class LocalAudio(QThread):
 
             for client in self.clients:
                 self.audio_socket.sendto(self.data, (client, self.client_port))
-            # self.stream.write(self.data)
+            self.stream.write(self.data)
         except Exception as e:
             logging.error('audio: {}'.format(e))
