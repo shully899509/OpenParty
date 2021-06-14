@@ -7,7 +7,7 @@ import sys
 
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QScrollArea
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 import cv2
 import queue
 import os
@@ -123,14 +123,19 @@ class MainWindow(QMainWindow):
 
     # when exiting the UI make sure the threads are closed
     def closeEvent(self, event):
-        print('closed manually')
-        if self.threadVideoGen.isRunning():
-            self.threadVideoGen.destroy()
-        if self.threadVideoPlay.isRunning():
-            self.threadVideoPlay.destroy()
-        if self.threadAudio.isRunning():
-            self.threadAudio.destroy()
-        self.threadChat.terminate()
+        try:
+            print('closed manually')
+            self.threadChat.terminate()
+            if self.threadVideoPlay.isRunning():
+                self.threadVideoPlay.destroy()
+            if self.threadAudio.isRunning():
+                self.threadAudio.destroy()
+            if self.threadVideoGen.isRunning():
+                self.threadVideoGen.destroy()
+        except:
+            os._exit(1)
+
+
 
 
 # run main component

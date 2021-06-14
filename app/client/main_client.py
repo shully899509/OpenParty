@@ -62,12 +62,14 @@ class MainWindow(QMainWindow):
                 self.volume_set = True
 
     def closeEvent(self, event):
-        print('closed manually')
-        self.chat_socket.close()
-        self.thread_video_play.terminate()
-        self.thread_audio_play.terminate()
-        self.thread_chat.terminate()
-        os._exit(1)
+        try:
+            print('closed manually')
+            self.chat_socket.close()
+            self.thread_video_play.terminate()
+            self.thread_audio_play.terminate()
+            self.thread_chat.terminate()
+        except:
+            os._exit(1)
 
     def start_video_play(self):
         self.thread_video_play = PlayVideo(self.frame, self.fpsLabel, self.thread_chat,

@@ -21,6 +21,8 @@ class PlayVideo(QThread):
     is_paused = True
 
     def destroy(self):
+        if self.video_socket:
+            self.video_socket.close()
         self.terminate()
         self.deleteLater()
 
@@ -51,7 +53,7 @@ class PlayVideo(QThread):
         self.frame = frame
         self.totalFrames = totalFrames
         self.fps_metadata = fps
-        self.frame_freq = (0.5 / self.fps_metadata)
+        self.frame_freq = (1 / self.fps_metadata)
 
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(totalFrames)
@@ -72,20 +74,20 @@ class PlayVideo(QThread):
 
         # properties to sync the metadata FPS with how fast the frames are processed
         self.fps_actual = 0
-        self.st = 0
+        self.time_prev_frame = 0
         self.frames_to_count = 1
         self.cnt = 0
         self.current_second = 0
 
         # properties for UDP socket to send the frames to clients
         self.BUFF_SIZE = 65536
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
+        self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.video_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
         host_name = socket.gethostname()
         self.host_ip = socket.gethostbyname(host_name)
         print('udp ip connect: ', self.host_ip)
         self.port = 9688
-        self.socket_address = (self.host_ip, self.port)
+        self.video_socket.bind((self.host_ip, self.port))
 
         self.client_port = 9689
         # self.server_socket.bind(self.socket_address)
@@ -183,7 +185,7 @@ class PlayVideo(QThread):
                     packed_message = pickle.dumps(msg_pair)
 
                     for client in self.clients:
-                        self.server_socket.sendto(packed_message, (client, self.client_port))
+                        self.video_socket.sendto(packed_message, (client, self.client_port))
                 except Exception as e:
                     logging.error('video: {}'.format(e))
 
@@ -210,13 +212,14 @@ class PlayVideo(QThread):
                 elif self.current_second > self.threadAudio.current_second:
                     self.frame_freq += 0.001
 
+                # print(self.fps_metadata)
                 # source for sync with fps:
                 # https://pyshine.com/How-to-send-audio-video-of-MP4-using-sockets-in-Python/
                 # sync with metadata fps
                 if self.cnt == self.frames_to_count:
                     try:
-                        self.fps_actual = (self.frames_to_count / (time.time() - self.st))
-                        self.st = time.time()
+                        self.fps_actual = (self.frames_to_count / (time.time() - self.time_prev_frame))
+                        self.time_prev_frame = time.time()
                         self.cnt = 0
                         if self.fps_actual > self.fps_metadata:
                             self.frame_freq += 0.001
@@ -227,6 +230,8 @@ class PlayVideo(QThread):
                     except Exception as e:
                         print(e)
                 self.cnt += 1
+
+                print(self.fps_actual)
 
                 self.fpsLabel.setText(str(round(self.fps_actual, 1)))
 

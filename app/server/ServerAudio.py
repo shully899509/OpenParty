@@ -16,6 +16,8 @@ class LocalAudio(QThread):
     stopSignal = pyqtSignal()
 
     def destroy(self):
+        if self.audio_socket:
+            self.audio_socket.close()
         self.terminate()
         self.deleteLater()
 
@@ -50,11 +52,11 @@ class LocalAudio(QThread):
         self.audio_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.audio_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
 
-        # self.audio_socket.bind((self.host_ip, (self.port)))
+        self.audio_socket.bind((self.host_ip, self.port))
         self.CHUNK = 1024
         self.wf = wave.open("temp.wav")
         self.p = pyaudio.PyAudio()
-        print('server listening at', (self.host_ip, (self.port)), self.wf.getframerate())
+        print('server listening at', (self.host_ip, self.port), self.wf.getframerate())
         self.stream = self.p.open(format=self.p.get_format_from_width(self.wf.getsampwidth()),
                                   channels=self.wf.getnchannels(),
                                   rate=self.wf.getframerate(),
@@ -115,8 +117,11 @@ class LocalAudio(QThread):
                        + str(timedelta(seconds=(self.total_frames / self.sample_rate)))
             self.audioProgressLabel.setText(progress)
 
+            # send the audio data by chunks to the list of clients
             for client in self.clients:
                 self.audio_socket.sendto(self.data, (client, self.client_port))
+
+            # playback audio locally
             self.stream.write(self.data)
         except Exception as e:
             logging.error('audio: {}'.format(e))
