@@ -50,24 +50,9 @@ Dependente curente: <br>
   
   [cod curent testat pe PyQt5](https://github.com/baoboa/pyqt5/blob/master/examples/multimediawidgets/player.py) <br>
   
-UPDATE (15-05): cod curent testat pentru server client cu video si audio <br>
-requirements:  <br>
-	- opencv-contrib-python 4.5.2.52 <br>
-	- PyAudio (instalat Visual Studio C++ Build Tools si env de Python 3.6, versiuni mai sus nu functioneaza) <br>
-	- imutils <br>
-	- [extern] ffmpeg pentru a extrage partea audio
-	
-fisierele folosite la rulare: server2, client2 cu ip-ul listenerului updatat, venv3 creat pentru Python 3.6	<br>  
-<br><br>
 UPDATE (06-06): mutat pe libraria PyQt pentru a genera interfata <br>
 		server trimite la client frameuri video si sincronizeaza timestamp-ul si progress bar-ul <br>
 		server face host prin TCP pentru chat in care poate primi comenzi de la client pentru a le executa (play/pauza/skipto) <br>
-<br>
-fisiere folosite la rulare: "pyqt player.py", "pyqt player client.py" (momentan adresele clientilor sunt hardcodate) <br>
-<br><br><br>
-UPDATE (09-06): impartit cod client si server pe module <br>
-		sync pe video si audio <br>
-		ip-urile hardcodate au fost inlocuite cu gethostbyname si lista de clienti primite cand se face conectarea la chat in TCP <br>
 <br>
 dependente curente:  <br>
 	- opencv-contrib-python 4.5.2.52 --> pentru extras frame-uri din fisier video <br>
