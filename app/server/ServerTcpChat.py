@@ -39,18 +39,25 @@ class TcpChat(QThread):
             try:  # recieving valid messages from client
                 user_msg = pickle.loads(client.recv(1024))
                 command = user_msg["msg"]
-                self.broadcast('{}: {}'.format(user_msg["user"], command))
+                if command not in ['/play', '/pause'] and command[:7] != '/skipto':
+                    self.broadcast('{}: {}'.format(user_msg["user"], command))
                 print('{}: {}'.format(user_msg["user"], command))
 
                 if command == '/play':
                     self.threadVideoPlay.playSignal.emit()
                     self.threadAudioPlay.playSignal.emit()
+                    if self.threadVideoPlay.is_paused:
+                        self.broadcast('{} resumed playback'.format(user_msg["user"]))
                 elif command == '/pause':
                     self.threadVideoPlay.stopSignal.emit()
                     self.threadAudioPlay.stopSignal.emit()
+                    if not self.threadVideoPlay.is_paused:
+                        self.broadcast('{} stopped playback'.format(user_msg["user"]))
                 elif command[:7] == '/skipto':
                     try:
                         frame_nb = int(command[8:])
+                        if frame_nb > self.threadVideoPlay.totalFrames:
+                            raise Exception('invalid frame number selected')
                         video_was_paused = self.threadVideoPlay.is_paused
                         self.threadVideoPlay.stopSignal.emit()
                         self.threadAudioPlay.stopSignal.emit()
@@ -59,8 +66,9 @@ class TcpChat(QThread):
                         if not video_was_paused:
                             self.threadVideoPlay.playSignal.emit()
                             self.threadAudioPlay.playSignal.emit()
+                        self.broadcast('{} skipped playback'.format(user_msg["user"]))
                     except Exception as e:
-                        logging.error('Error reading frame skip command\n', e)
+                        logging.error('Error reading frame skip command\n')
 
             except:  # removing clients
                 index = self.clients.index(client)
@@ -86,6 +94,7 @@ class TcpChat(QThread):
             self.nicknames.append(nickname)
             self.clients.append(client)
 
+            # get only the IP address for each client, remove the port as it is irrelevant
             self.clients_address = [client.getpeername()[0] for client in self.clients]
             self.threadVideoPlay.update_clients(self.clients_address)
             self.threadAudioPlay.update_clients(self.clients_address)

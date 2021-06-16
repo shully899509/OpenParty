@@ -177,7 +177,7 @@ class PlayVideo(QThread):
                     encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
                     encoded_frame = base64.b64encode(buffer)
 
-                    # TODO: send total_frames and fps only once in the TCP connection
+                    # TODO: maybe send total_frames and fps only once in the TCP connection
                     msg_pair = {"frame_nb": current_frame_no,
                                 "total_frames": self.totalFrames,
                                 "frame": encoded_frame,
@@ -212,7 +212,6 @@ class PlayVideo(QThread):
                 elif self.current_second > self.threadAudio.current_second:
                     self.frame_freq += 0.001
 
-                # print(self.fps_metadata)
                 # source for sync with fps:
                 # https://pyshine.com/How-to-send-audio-video-of-MP4-using-sockets-in-Python/
                 # sync with metadata fps
@@ -231,7 +230,7 @@ class PlayVideo(QThread):
                         print(e)
                 self.cnt += 1
 
-                print(self.fps_actual)
+                # print(self.fps_metadata, self.fps_actual)
 
                 self.fpsLabel.setText(str(round(self.fps_actual, 1)))
 

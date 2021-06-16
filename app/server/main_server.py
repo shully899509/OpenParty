@@ -99,6 +99,7 @@ class MainWindow(QMainWindow):
         print('Opening file {} with fps {}'.format(list(self.videoFileName)[0], self.fps))
 
         # extract and convert audio from the video file into a temp.wav to be sent
+        # set the bitrate, number of channels, sample size and overwrite old file with same name
         command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
         os.system(command)
 
