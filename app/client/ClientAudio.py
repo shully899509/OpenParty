@@ -13,7 +13,8 @@ class AudioRec(QThread):
         super().__init__()
 
         self.host_name = socket.gethostname()
-        self.host_ip = socket.gethostbyname(self.host_name)
+        #self.host_ip = socket.gethostbyname(self.host_name)
+        self.host_ip = '127.0.0.1'
         self.port = 9634
         self.socket_address = (self.host_ip, self.port)
 

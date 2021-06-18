@@ -42,7 +42,8 @@ class LocalAudio(QThread):
         self.stopButton.clicked.connect(self.stop_timer)
 
         self.host_name = socket.gethostname()
-        self.host_ip = socket.gethostbyname(self.host_name)
+        #self.host_ip = socket.gethostbyname(self.host_name)
+        self.host_ip = '127.0.0.1'
 
         print('audio host at ', self.host_ip)
         self.port = 9633
@@ -60,7 +61,8 @@ class LocalAudio(QThread):
         self.stream = self.p.open(format=self.p.get_format_from_width(self.wf.getsampwidth()),
                                   channels=self.wf.getnchannels(),
                                   rate=self.wf.getframerate(),
-                                  input=True, output=True,
+                                  # input=True, # for mic
+                                  output=True,
                                   frames_per_buffer=self.CHUNK)
         print('audio framerate', self.wf.getframerate())
         self.data = None

@@ -30,7 +30,6 @@ class PlayVideo(QThread):
                  playButton, stopButton, fpsLabel, threadVideoGen, threadAudio):
 
         super().__init__()
-
         self.threadVideoGen = threadVideoGen
         self.threadAudio = threadAudio
 
@@ -84,14 +83,13 @@ class PlayVideo(QThread):
         self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.video_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
         host_name = socket.gethostname()
-        self.host_ip = socket.gethostbyname(host_name)
+        # self.host_ip = socket.gethostbyname(host_name)
+        self.host_ip = '127.0.0.1'
         print('udp ip connect: ', self.host_ip)
         self.port = 9688
         self.video_socket.bind((self.host_ip, self.port))
 
         self.client_port = 9689
-        # self.server_socket.bind(self.socket_address)
-
         self.clients = []
 
     # fetch clients from Tcp chat module
@@ -104,8 +102,11 @@ class PlayVideo(QThread):
 
     # restart the timer when play button is pressed
     def play_timer(self):
-        self.timer.start(self.frame_freq * 1000)
-        self.is_paused = False
+        try:
+            self.timer.start(self.frame_freq * 1000)
+            self.is_paused = False
+        except Exception as e:
+            logging.error('timer start err: {}'.format(e))
 
     # stop the timer when pause button is pressed
     def stop_timer(self):
@@ -136,6 +137,8 @@ class PlayVideo(QThread):
             self.slider_pressed = False
             if not self.is_paused:
                 self.timer.start(self.frame_freq * 1000)
+
+
         except Exception as e:
             logging.error(e)
 
@@ -184,11 +187,11 @@ class PlayVideo(QThread):
                                 "fps": self.fps_metadata}
                     packed_message = pickle.dumps(msg_pair)
 
+                    # print(self.clients)
                     for client in self.clients:
                         self.video_socket.sendto(packed_message, (client, self.client_port))
                 except Exception as e:
                     logging.error('video: {}'.format(e))
-
 
                 # # display frame in player
                 # convert image to RGB format
@@ -236,5 +239,16 @@ class PlayVideo(QThread):
 
                 # restart and update timer with new frame frequency
                 self.timer.start(self.frame_freq * 1000)
+
+                # restart playback at end of video and pause
+                if current_frame_no >= self.totalFrames - 5:
+                    try:
+                        self.stop_timer()
+                        self.threadAudio.stopSignal.emit()
+                        self.move_progress_bar_client(0)
+                        self.threadAudio.move_slider_client(0)
+                        logging.info('Server finished playback')
+                    except Exception as e:
+                        logging.error('reset playback err: ', e)
         except Exception as e:
             logging.error(e)

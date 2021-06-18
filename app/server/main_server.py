@@ -6,7 +6,7 @@
 import sys
 
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 import cv2
 import queue
@@ -46,9 +46,13 @@ class MainWindow(QMainWindow):
         self.process_name = psutil.Process(os.getpid()).name()
         self.volume_set = False
 
+        self.session_active = True
+        while not self.session_active:
+            pass
+
     # initialize threads for each component
     def start_video_gen(self):
-        self.threadVideoGen = VideoGen(self.cap, self.q)
+        self.threadVideoGen = VideoGen(self.cap, self.q, self.totalFrames)
         self.threadVideoGen.start()
 
     def start_audio(self):
@@ -73,47 +77,53 @@ class MainWindow(QMainWindow):
 
     # after opening file start threads for each component
     def open_file(self):
-        if self.threadVideoPlay.isRunning():
-            self.threadVideoPlay.stopSignal.emit()
-        if self.threadAudio.isRunning():
-            self.threadAudio.stopSignal.emit()
+        try:
+            if self.threadVideoPlay.isRunning():
+                self.threadVideoPlay.stopSignal.emit()
+            if self.threadAudio.isRunning():
+                self.threadAudio.stopSignal.emit()
 
-        if self.threadAudio.isRunning():
-            self.threadAudio.destroy()
-        if self.threadVideoPlay.isRunning():
-            self.threadVideoPlay.destroy()
-        if self.threadVideoGen.isRunning():
-            self.threadVideoGen.destroy()
+            if self.threadAudio.isRunning():
+                self.threadAudio.destroy()
+            if self.threadVideoPlay.isRunning():
+                self.threadVideoPlay.destroy()
+            if self.threadVideoGen.isRunning():
+                self.threadVideoGen.destroy()
 
-        self.threadVideoGen = QThread()
-        self.threadVideoPlay = QThread()
-        self.threadAudio = QThread()
+            self.threadVideoGen = QThread()
+            self.threadVideoPlay = QThread()
+            self.threadAudio = QThread()
 
-        self.videoFileName = QFileDialog.getOpenFileName(self, 'Select Video File')
-        self.file_name = list(self.videoFileName)[0]
-        self.cap = cv2.VideoCapture(self.file_name)
-        self.fps = self.cap.get(cv2.CAP_PROP_FPS)
-        self.q = queue.Queue(maxsize=1000)
-        self.totalFrames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            self.videoFileName = QFileDialog.getOpenFileName(self, 'Select Video File')
+            self.file_name = list(self.videoFileName)[0]
+            if not self.file_name == "":
+                self.cap = cv2.VideoCapture(self.file_name)
+                # if not self.cap:
+                #     raise Exception('file not valid')
+                self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+                self.q = queue.Queue(maxsize=1000)
+                self.totalFrames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-        print('Opening file {} with fps {}'.format(list(self.videoFileName)[0], self.fps))
+                print('Opening file {} with fps {}'.format(list(self.videoFileName)[0], self.fps))
 
-        # extract and convert audio from the video file into a temp.wav to be sent
-        # set the bitrate, number of channels, sample size and overwrite old file with same name
-        command = "ffmpeg -i {} -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
-        os.system(command)
+                # extract and convert audio from the video file into a temp.wav to be sent
+                # set the bitrate, number of channels, sample size and overwrite old file with same name
+                command = "ffmpeg -i \"{}\" -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
+                os.system(command)
 
-        self.start_video_gen()
-        self.start_audio()
-        self.start_video_play()
-        self.start_tcp_chat()
+                self.start_video_gen()
+                self.start_audio()
+                self.start_video_play()
+                self.start_tcp_chat()
 
-        for session in AudioUtilities.GetAllSessions():
-            if session.Process and session.Process.name() == self.process_name:
-                self.volume = session.SimpleAudioVolume
-                self.volume.SetMasterVolume(0.5, None)
-                self.volumeSlider.setValue(50)
-                self.volume_set = True
+                for session in AudioUtilities.GetAllSessions():
+                    if session.Process and session.Process.name() == self.process_name:
+                        self.volume = session.SimpleAudioVolume
+                        self.volume.SetMasterVolume(0.5, None)
+                        self.volumeSlider.setValue(50)
+                        self.volume_set = True
+        except Exception as e:
+            logging.error(e)
 
     def set_volume(self):
         if self.volume_set:
