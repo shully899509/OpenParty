@@ -135,7 +135,7 @@ class MainWindow(QMainWindow):
     # when exiting the UI make sure the threads are closed
     def closeEvent(self, event):
         try:
-            print('closed manually')
+            print('Session ended')
             self.threadChat.terminate()
             if self.threadVideoPlay.isRunning():
                 self.threadVideoPlay.destroy()
@@ -143,7 +143,7 @@ class MainWindow(QMainWindow):
                 self.threadAudio.destroy()
             if self.threadVideoGen.isRunning():
                 self.threadVideoGen.destroy()
-        except:
+        finally:
             os._exit(1)
 
 

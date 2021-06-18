@@ -31,26 +31,26 @@ class VideoGen(QThread):
         WIDTH = 320
         HEIGHT = 240
 
-        while True:
-            current_frame_nb = 0
-            while self.cap.isOpened() and current_frame_nb < self.total_frames:
-                try:
-                    # if self.stop_q:
-                    #     print('queue is stopped')
-                    while not self.stop_q:
-                        # to be used for updating the slider position
-                        current_frame_nb = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
+        # while True:
+        #     current_frame_nb = 0
+        while self.cap.isOpened():
+            try:
+                # if self.stop_q:
+                #     print('queue is stopped')
+                while not self.stop_q:
+                    # to be used for updating the slider position
+                    current_frame_nb = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
 
-                        ret, frame = self.cap.read()
+                    ret, frame = self.cap.read()
 
-                        frame = imutils.resize(frame, width=WIDTH, height=HEIGHT)
-                        self.q.put((ret, frame, current_frame_nb))
-                except AttributeError as e:
-                    if str(e) == "'NoneType' object has no attribute 'shape'":
-                        #logging.error('Frame not found')
-                        pass
-                except Exception as e:
-                    logging.error('Error in frame generation: {}'.format(e))
+                    frame = imutils.resize(frame, width=WIDTH, height=HEIGHT)
+                    self.q.put((ret, frame, current_frame_nb))
+            except AttributeError as e:
+                if str(e) == "'NoneType' object has no attribute 'shape'":
+                    #logging.error('Frame not found')
+                    pass
+            except Exception as e:
+                logging.error('Error in frame generation: {}'.format(e))
             # print(self.cap.isOpened())
             # print('video finished generation')
             # self.video_stopped_sig.emit()

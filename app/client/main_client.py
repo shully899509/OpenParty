@@ -63,12 +63,12 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
         try:
-            print('closed manually')
-            self.chat_socket.close()
+            logging.info('Session ended with server')
             self.thread_video_play.terminate()
             self.thread_audio_play.terminate()
             self.thread_chat.terminate()
-        except:
+            self.chat_socket.close()
+        finally:
             os._exit(1)
 
     def start_video_play(self):
