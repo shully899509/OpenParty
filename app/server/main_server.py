@@ -27,7 +27,6 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi('open.ui', self)
-        # self.frame.setScaledContents(True)
         self.setWindowTitle('OpenParty Server')
         self.totalFrames = 0
         self.fps = 0
@@ -52,6 +51,7 @@ class MainWindow(QMainWindow):
 
         self.is_fullscreen = False
 
+    # full screen UI on double click
     def mouseDoubleClickEvent(self, e):  # double click
         try:
             if not self.is_fullscreen:
@@ -126,7 +126,7 @@ class MainWindow(QMainWindow):
                 # extract and convert audio from the video file into a temp.wav to be sent
                 # set the bitrate, number of channels, sample size and overwrite old file with same name
                 command = "ffmpeg -i \"{}\" -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.file_name, 'temp.wav')
-                # os.system(command)
+                os.system(command)
 
                 self.start_video_gen()
                 self.start_audio()

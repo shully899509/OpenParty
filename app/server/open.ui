@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1017</width>
+    <width>1129</width>
     <height>724</height>
    </rect>
   </property>
@@ -120,20 +120,6 @@ font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
      </widget>
     </item>
-    <item row="1" column="3">
-     <widget class="QLabel" name="fpsLabel">
-      <property name="toolTip">
-       <string>Current FPS</string>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string>FPS</string>
-      </property>
-     </widget>
-    </item>
     <item row="2" column="0">
      <widget class="QLabel" name="audioProgressLabel">
       <property name="toolTip">
@@ -189,6 +175,30 @@ font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
      </widget>
     </item>
+    <item row="3" column="3">
+     <widget class="QLabel" name="fpsLabel">
+      <property name="toolTip">
+       <string>Current FPS</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string>FPS</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLabel" name="label">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);\nfont: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string>FPS:</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -196,7 +206,7 @@ font: 8pt &quot;Lucida Fax&quot;;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1017</width>
+     <width>1129</width>
      <height>26</height>
     </rect>
    </property>

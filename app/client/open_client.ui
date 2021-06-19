@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1102</width>
+    <width>1137</width>
     <height>703</height>
    </rect>
   </property>
@@ -36,8 +36,124 @@
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout">
+    <item row="2" column="4">
+     <widget class="QPushButton" name="readHost">
+      <property name="maximumSize">
+       <size>
+        <width>93</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="progresslabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Current / Total</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QSlider" name="progressBar">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="4">
+     <widget class="QPushButton" name="playButton">
+      <property name="maximumSize">
+       <size>
+        <width>93</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Play</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="6">
+     <widget class="QLineEdit" name="messageBox">
+      <property name="maximumSize">
+       <size>
+        <width>141</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="3">
+     <widget class="QLineEdit" name="hostAddressBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+     </widget>
+    </item>
     <item row="0" column="0" colspan="6">
      <widget class="QGraphicsView" name="frame"/>
+    </item>
+    <item row="0" column="7">
+     <widget class="QSlider" name="volumeSlider">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="2">
+     <widget class="QLabel" name="hostIpLabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Host IP Address</string>
+      </property>
+     </widget>
     </item>
     <item row="0" column="6" rowspan="3">
      <widget class="QTextBrowser" name="chatBox">
@@ -68,51 +184,6 @@ font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="7">
-     <widget class="QSlider" name="volumeSlider">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);\nfont: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string>FPS:</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="1">
-     <widget class="QLabel" name="fpsLabel">
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string>FPS</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="4">
-     <widget class="QPushButton" name="playButton">
-      <property name="maximumSize">
-       <size>
-        <width>93</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string>Play</string>
-      </property>
-     </widget>
-    </item>
     <item row="1" column="5">
      <widget class="QPushButton" name="stopButton">
       <property name="maximumSize">
@@ -130,95 +201,24 @@ font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
      </widget>
     </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="progresslabel">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
+    <item row="3" column="1">
+     <widget class="QLabel" name="label">
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);\nfont: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
+      <property name="text">
+       <string>FPS:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QLabel" name="fpsLabel">
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
 font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
       <property name="text">
-       <string>Current / Total</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="2">
-     <widget class="QLabel" name="hostIpLabel">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string>Host IP Address</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="3">
-     <widget class="QLineEdit" name="hostAddressBox">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="4">
-     <widget class="QPushButton" name="readHost">
-      <property name="maximumSize">
-       <size>
-        <width>93</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
-      </property>
-      <property name="text">
-       <string>Start</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="0">
-     <widget class="QSlider" name="progressBar">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="6">
-     <widget class="QLineEdit" name="messageBox">
-      <property name="maximumSize">
-       <size>
-        <width>141</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);
-font: 8pt &quot;Lucida Fax&quot;;</string>
+       <string>FPS</string>
       </property>
      </widget>
     </item>
@@ -229,7 +229,7 @@ font: 8pt &quot;Lucida Fax&quot;;</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1102</width>
+     <width>1137</width>
      <height>26</height>
     </rect>
    </property>

@@ -14,8 +14,8 @@ class TcpChat(QThread):
         self.threadAudioPlay = threadAudioPlay
 
         self.host_name = socket.gethostname()
-        #self.IP = socket.gethostbyname(self.host_name)
-        self.IP = '127.0.0.1'
+        self.IP = socket.gethostbyname(self.host_name)
+        # self.IP = '127.0.0.1'
         self.PORT = 7976  # Choosing unreserved port
 
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # socket initialization
@@ -62,7 +62,7 @@ class TcpChat(QThread):
                 elif command[:7] == '/skipto':
                     try:
                         frame_nb = int(command[8:])
-                        if frame_nb > self.threadVideoPlay.totalFrames or frame_nb < 0:
+                        if frame_nb > self.threadVideoPlay.totalFrames - 10 or frame_nb < 0:
                             raise Exception('invalid frame number selected')
                         video_was_paused = self.threadVideoPlay.is_paused
                         self.threadVideoPlay.stopSignal.emit()
@@ -72,7 +72,11 @@ class TcpChat(QThread):
                         if not video_was_paused:
                             self.threadVideoPlay.playSignal.emit()
                             self.threadAudioPlay.playSignal.emit()
-                        self.broadcast('{} skipped playback'.format(user_msg["user"]))
+                        self.broadcast('{} skipped to {}'.format(
+                            user_msg["user"],
+                            self.threadVideoPlay.frame_to_timestamp(frame_nb,
+                                                                    self.threadVideoPlay.fps_metadata)
+                        ))
                     except Exception as e:
                         logging.error('Error reading frame skip command\n')
 

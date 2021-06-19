@@ -39,7 +39,7 @@ class PlayVideo(QThread):
         self.playSignal.connect(self.play_timer)
         self.stopSignal.connect(self.stop_timer)
 
-        # ui properties inherited from MainWindow class
+        # UI properties inherited from MainWindow class
         self.cap = cap
         self.playButton = playButton
         self.stopButton = stopButton
@@ -86,8 +86,8 @@ class PlayVideo(QThread):
         self.video_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.video_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, self.BUFF_SIZE)
         host_name = socket.gethostname()
-        # self.host_ip = socket.gethostbyname(host_name)
-        self.host_ip = '127.0.0.1'
+        self.host_ip = socket.gethostbyname(host_name)
+        # self.host_ip = '127.0.0.1'
         print('udp ip connect: ', self.host_ip)
         self.port = 9688
         self.video_socket.bind((self.host_ip, self.port))
@@ -95,6 +95,17 @@ class PlayVideo(QThread):
         self.client_port = 9689
         self.clients = []
 
+        # from PyQt5.QtWidgets import QShortcut
+        # from PyQt5.QtGui import QKeySequence
+        # from PyQt5.QtCore import Qt
+        # # play/pause video on spacebar pressed
+        # self.spacebar = QShortcut(QKeySequence(Qt.Key_Space), self)
+        # self.spacebar.activated.connect(self.play_pause_on_space)
+
+
+    # def play_pause_on_space(self):
+    #     print('do smth')
+    
     # fetch clients from Tcp chat module
     def update_clients(self, clients):
         self.clients = clients
@@ -218,7 +229,7 @@ class PlayVideo(QThread):
                 scene = QGraphicsScene()
                 scene.addPixmap(pixmap)
 
-                self.frame.setSceneRect(0, 0, self.frame.width()-10, self.frame.height()-10)
+                self.frame.setSceneRect(0, 0, self.frame.width() - 10, self.frame.height() - 10)
                 self.frame.setScene(scene)
 
                 # because frame processing time if fluctuating

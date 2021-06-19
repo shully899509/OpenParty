@@ -11,7 +11,6 @@ class TcpChat(QThread):
     def __init__(self, chat_socket, host_ip, chat_box, message_box):
         super().__init__()
         # self.nickname = 'test_user'
-        # self.nickname = input("Choose your nickname: ")
         self.nickname = ""
         self.host_ip = host_ip
         self.chat_socket = chat_socket
@@ -58,13 +57,10 @@ class TcpChat(QThread):
             logging.error(e)
 
     def write(self):
-        # while True:  # message layout
         try:
             user = self.nickname
             message = self.message_box.text()
             if len(message) < 1024:
-            #self.chat_box.append('{}: {}'.format(self.nickname, self.message_box.text()))
-
                 user_msg = pickle.dumps({"user": user, "msg": message})
                 if self.started:
                     self.chat_socket.send(user_msg)
@@ -77,10 +73,6 @@ class TcpChat(QThread):
     def run(self):
         self.chat_box.append("Choose your nickname:")
 
+        # waiting until nickname is set before connecting socket
         while not self.started and self.nickname == "":
-            # print('waiting')
             pass
-
-
-        # write_thread = threading.Thread(target=self.write)  # sending messages
-        # write_thread.start()
