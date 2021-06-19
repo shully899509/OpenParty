@@ -70,7 +70,8 @@ class MainWindow(QMainWindow):
     def start_tcp_chat(self):
         if not self.threadChat.isRunning():
             print('starting chat thread...')
-            self.threadChat = TcpChat(self.threadVideoPlay, self.threadAudio)
+            self.threadChat = TcpChat(self.threadVideoPlay, self.threadAudio,
+                                      self.chatBox, self.messageBox)
             self.threadChat.start()
         else:
             self.threadChat.update_threads(self.threadVideoPlay, self.threadAudio)
@@ -78,25 +79,27 @@ class MainWindow(QMainWindow):
     # after opening file start threads for each component
     def open_file(self):
         try:
-            if self.threadVideoPlay.isRunning():
-                self.threadVideoPlay.stopSignal.emit()
-            if self.threadAudio.isRunning():
-                self.threadAudio.stopSignal.emit()
-
-            if self.threadAudio.isRunning():
-                self.threadAudio.destroy()
-            if self.threadVideoPlay.isRunning():
-                self.threadVideoPlay.destroy()
-            if self.threadVideoGen.isRunning():
-                self.threadVideoGen.destroy()
-
-            self.threadVideoGen = QThread()
-            self.threadVideoPlay = QThread()
-            self.threadAudio = QThread()
-
             self.videoFileName = QFileDialog.getOpenFileName(self, 'Select Video File')
             self.file_name = list(self.videoFileName)[0]
+
+            # self.file_name = "C:\\repos\\OpenParty\\app\\server\\vids\\Nigt of the living dead.mp4"
             if not self.file_name == "":
+                if self.threadVideoPlay.isRunning():
+                    self.threadVideoPlay.stopSignal.emit()
+                if self.threadAudio.isRunning():
+                    self.threadAudio.stopSignal.emit()
+
+                if self.threadAudio.isRunning():
+                    self.threadAudio.destroy()
+                if self.threadVideoPlay.isRunning():
+                    self.threadVideoPlay.destroy()
+                if self.threadVideoGen.isRunning():
+                    self.threadVideoGen.destroy()
+
+                self.threadVideoGen = QThread()
+                self.threadVideoPlay = QThread()
+                self.threadAudio = QThread()
+
                 self.cap = cv2.VideoCapture(self.file_name)
                 # if not self.cap:
                 #     raise Exception('file not valid')
@@ -104,12 +107,12 @@ class MainWindow(QMainWindow):
                 self.q = queue.Queue(maxsize=1000)
                 self.totalFrames = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-                print('Opening file {} with fps {}'.format(list(self.videoFileName)[0], self.fps))
+                print('Opening file {} with fps {}'.format(list(self.file_name)[0], self.fps))
 
                 # extract and convert audio from the video file into a temp.wav to be sent
                 # set the bitrate, number of channels, sample size and overwrite old file with same name
-                command = "ffmpeg -i \"{}\" -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.videoFileName[0], 'temp.wav')
-                os.system(command)
+                command = "ffmpeg -i \"{}\" -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.file_name, 'temp.wav')
+                #os.system(command)
 
                 self.start_video_gen()
                 self.start_audio()
@@ -153,4 +156,5 @@ class MainWindow(QMainWindow):
 app = QApplication(sys.argv)
 widget = MainWindow()
 widget.show()
+#widget.open_file()
 sys.exit(app.exec_())

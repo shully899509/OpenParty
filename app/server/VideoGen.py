@@ -28,8 +28,12 @@ class VideoGen(QThread):
         # too much will cause lag because of UDP packets exceeding max size
         # could set here as parameters for quality in server UI
         # also consider splitting each frame and reconstructing it in client side
-        WIDTH = 320
-        HEIGHT = 240
+
+        # WIDTH = 1280
+        # HEIGHT = 720
+
+        WIDTH = 640
+        HEIGHT = 480
 
         # while True:
         #     current_frame_nb = 0

@@ -8,6 +8,7 @@ import time
 import logging
 import os
 import pickle
+import sys
 
 BASE_DIR = os.path.dirname(__file__)
 path = BASE_DIR.replace('\\'[0], '/')
@@ -69,6 +70,7 @@ class PlayVideo(QThread):
         # properties for slider functionality
         self.slider_pressed = False
         self.progressBar.sliderPressed.connect(self.when_slider_pressed)
+        self.progressBar.sliderReleased.connect(self.when_slider_released)
         self.progressBar.sliderReleased.connect(self.move_progress_bar)
 
         # properties to sync the metadata FPS with how fast the frames are processed
@@ -117,26 +119,29 @@ class PlayVideo(QThread):
     def when_slider_pressed(self):
         self.slider_pressed = True
 
+    def when_slider_released(self):
+        self.slider_pressed = False
+
     # when slider is released try to empty queue and move to selected frame number
     def move_progress_bar(self):
         try:
             value = self.progressBar.value()
+            if value < self.totalFrames:
+                # stop video playback timer
+                self.timer.stop()
+                # signal queue thread to stop generating
+                self.threadVideoGen.stop_q = True
 
-            # stop video playback timer
-            self.timer.stop()
-            # signal queue thread to stop generating
-            self.threadVideoGen.stop_q = True
+                # empty remaining frames stored in queue
+                while not self.q.empty():
+                    # print(self.q.qsize())
+                    self.q.get()
 
-            # empty remaining frames stored in queue
-            while not self.q.empty():
-                # print(self.q.qsize())
-                self.q.get()
-
-            self.cap.set(1, value)
-            self.threadVideoGen.stop_q = False
-            self.slider_pressed = False
-            if not self.is_paused:
-                self.timer.start(self.frame_freq * 1000)
+                self.cap.set(1, value)
+                self.threadVideoGen.stop_q = False
+                self.slider_pressed = False
+                if not self.is_paused:
+                    self.timer.start(self.frame_freq * 1000)
 
 
         except Exception as e:
@@ -177,8 +182,9 @@ class PlayVideo(QThread):
 
                 # encode frame and send to clients
                 try:
-                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 40])
                     encoded_frame = base64.b64encode(buffer)
+                    #print(sys.getsizeof(encoded_frame))
 
                     # TODO: maybe send total_frames and fps only once in the TCP connection
                     msg_pair = {"frame_nb": current_frame_no,

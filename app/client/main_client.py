@@ -1,6 +1,6 @@
 # DONE: (only sent audio, still need sync) receive audio packets and sync with video
 # DONE: try to connect to host AFTER clicking on 'start' button
-# TODO: fix crash when video is ended or trying to reconnect
+# DONE: fix crash when video is ended or trying to reconnect
 import socket
 import sys
 
@@ -44,6 +44,8 @@ class MainWindow(QMainWindow):
         self.process_name = psutil.Process(os.getpid()).name()
         self.volume_set = False
 
+        self.hostAddressBox.setText('127.0.0.1')
+
     def start_all_threads(self):
         if not self.chat_started:
             print('Trying connection to {}'.format(self.hostAddressBox.text()))
@@ -79,11 +81,12 @@ class MainWindow(QMainWindow):
         self.thread_video_play.start()
 
     def start_audio(self):
-        self.thread_audio_play = AudioRec()
+        self.thread_audio_play = AudioRec(self.thread_chat)
         self.thread_audio_play.start()
 
     def start_tcp_chat(self):
-        self.thread_chat = TcpChat(self.chat_socket, self.hostAddressBox.text())
+        self.thread_chat = TcpChat(self.chat_socket, self.hostAddressBox.text(),
+                                   self.chatBox, self.messageBox)
         self.thread_chat.start()
 
     def set_volume(self):

@@ -94,14 +94,16 @@ class LocalAudio(QThread):
 
     def move_slider(self):
         try:
-            self.timer.stop()
             value = self.progressBar.value()
-            self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
-            if not self.is_paused:
-                self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
-            # print('skipped to ', (value/25))
+            position = int((value / self.video_fps) * self.sample_rate)
+            if position < self.wf.getnframes():
+                self.timer.stop()
+                self.wf.setpos(position)
+                if not self.is_paused:
+                    self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
+                # print('skipped to ', (value/25))
         except Exception as e:
-            logging.error(e)
+            logging.error('error progress bar set audio: {}'.format(e))
 
     def move_slider_client(self, value):
         self.wf.setpos(int((value / self.video_fps) * self.sample_rate))
@@ -112,6 +114,7 @@ class LocalAudio(QThread):
         #                                                    self.wf.tell()/self.sample_rate))
 
         try:
+            #print(self.wf.tell(), self.wf.getnframes())
             self.data = self.wf.readframes(self.CHUNK)
             current_position = self.wf.tell()
             self.current_second = current_position / self.sample_rate

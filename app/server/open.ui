@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1450</width>
-    <height>928</height>
+    <width>1069</width>
+    <height>720</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -20,70 +20,14 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>1069</width>
+     <height>669</height>
+    </size>
+   </property>
    <layout class="QGridLayout" name="gridLayout">
-    <property name="leftMargin">
-     <number>20</number>
-    </property>
-    <property name="topMargin">
-     <number>20</number>
-    </property>
-    <property name="rightMargin">
-     <number>20</number>
-    </property>
-    <property name="bottomMargin">
-     <number>9</number>
-    </property>
-    <item row="1" column="2">
-     <widget class="QPushButton" name="stopButton">
-      <property name="text">
-       <string>Pause</string>
-      </property>
-     </widget>
-    </item>
-    <item row="5" column="0" colspan="3">
-     <widget class="QLabel" name="progresslabel">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="toolTip">
-       <string>Video Timestamp</string>
-      </property>
-      <property name="text">
-       <string>Current / Total</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="audioProgressLabel">
-      <property name="toolTip">
-       <string>Audio Timestamp</string>
-      </property>
-      <property name="text">
-       <string>Audio Current / Total</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
-     <widget class="QLabel" name="fpsLabel">
-      <property name="toolTip">
-       <string>Current FPS</string>
-      </property>
-      <property name="text">
-       <string>FPS</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="0">
-     <widget class="QPushButton" name="openButton">
-      <property name="text">
-       <string>Open File</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="3">
+    <item row="0" column="0" colspan="4">
      <widget class="QLabel" name="frame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -105,24 +49,127 @@
       </property>
      </widget>
     </item>
+    <item row="0" column="4" rowspan="3">
+     <widget class="QTextBrowser" name="chatBox">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>141</width>
+        <height>591</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>141</width>
+        <height>9999</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5" rowspan="3">
+     <widget class="QSlider" name="volumeSlider">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="openButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Open File</string>
+      </property>
+     </widget>
+    </item>
     <item row="1" column="1">
      <widget class="QPushButton" name="playButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="text">
        <string>Play</string>
       </property>
      </widget>
     </item>
-    <item row="6" column="0" colspan="3">
-     <widget class="QSlider" name="progressBar">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="stopButton">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Pause</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="3" rowspan="7">
-     <widget class="QSlider" name="volumeSlider">
+    <item row="1" column="3">
+     <widget class="QLabel" name="fpsLabel">
+      <property name="toolTip">
+       <string>Current FPS</string>
+      </property>
+      <property name="text">
+       <string>FPS</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="audioProgressLabel">
+      <property name="toolTip">
+       <string>Audio Timestamp</string>
+      </property>
+      <property name="text">
+       <string>Audio Current / Total</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="progresslabel">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>Video Timestamp</string>
+      </property>
+      <property name="text">
+       <string>Current / Total</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QLineEdit" name="messageBox">
+      <property name="maximumSize">
+       <size>
+        <width>141</width>
+        <height>16777215</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0" colspan="5">
+     <widget class="QSlider" name="progressBar">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Horizontal</enum>
       </property>
      </widget>
     </item>
@@ -133,8 +180,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1450</width>
-     <height>21</height>
+     <width>1069</width>
+     <height>26</height>
     </rect>
    </property>
   </widget>

@@ -20,6 +20,9 @@ class PlayVideo(QThread):
                  progressBar, progresslabel):
         super().__init__()
 
+        self.chat_socket = chat_socket
+        self.threadChat = threadChat
+
         self.frame = frame
         self.fpsLabel = fpsLabel
 
@@ -32,7 +35,7 @@ class PlayVideo(QThread):
         self.timer.timeout.connect(self.play_video)
         self.timer.start(1/25)
 
-        self.threadChat = threadChat
+
 
         self.playButton.clicked.connect(self.play_timer)
         self.stopButton.clicked.connect(self.stop_timer)
@@ -55,7 +58,7 @@ class PlayVideo(QThread):
         self.progressBar.sliderPressed.connect(self.when_slider_pressed)
         self.progressBar.sliderReleased.connect(self.move_progress_bar)
 
-        self.chat_socket = chat_socket
+
 
         self.slider_pressed = False
         self.set_total_frames = False
@@ -90,6 +93,10 @@ class PlayVideo(QThread):
     # should implement sending frames from VideoGen server side
     # and then make sync with video here
     def get_video_data(self):
+        while self.threadChat.nickname == "":
+            # print('wait video')
+            # time.sleep(0.1)
+            pass
         while True:
             try:
                 rec_frame, _ = self.video_socket.recvfrom(self.BUFF_SIZE)

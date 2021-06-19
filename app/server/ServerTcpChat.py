@@ -8,7 +8,7 @@ logging.basicConfig(format="%(message)s", level=logging.INFO)
 
 # source: https://hackernoon.com/creating-command-line-based-chat-room-using-python-oxu3u33
 class TcpChat(QThread):
-    def __init__(self, threadVideoPlay, threadAudioPlay):
+    def __init__(self, threadVideoPlay, threadAudioPlay, chat_box, message_box):
         super().__init__()
         self.threadVideoPlay = threadVideoPlay
         self.threadAudioPlay = threadAudioPlay
@@ -26,7 +26,11 @@ class TcpChat(QThread):
         self.nicknames = []
         self.clients_address = []
 
+        self.chat_box = chat_box
+        self.message_box = message_box
+
         print(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
+        self.chat_box.append(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
 
     def broadcast(self, message):  # broadcast function declaration
         msg = pickle.dumps({"user": 'server', "msg": message})
@@ -42,6 +46,8 @@ class TcpChat(QThread):
                 if command not in ['/play', '/pause'] and command[:7] != '/skipto':
                     self.broadcast('{}: {}'.format(user_msg["user"], command))
                 print('{}: {}'.format(user_msg["user"], command))
+                self.chat_box.append('{}: {}'.format(user_msg["user"], command))
+
 
                 if command == '/play':
                     self.threadVideoPlay.playSignal.emit()
@@ -82,28 +88,33 @@ class TcpChat(QThread):
                 nickname = self.nicknames[index]
                 self.broadcast('{} left!'.format(nickname))
                 print('{} left!'.format(nickname))
+                self.chat_box.append('{} left!'.format(nickname))
                 self.nicknames.remove(nickname)
                 break
 
     def receive(self):  # accepting multiple clients
         while True:
-            client, address = self.server.accept()
-            print("Connected with {}".format(str(address)))
-            client.send(pickle.dumps({"msg": 'NICKNAME'}))
-            nickname = pickle.loads(client.recv(1024))["msg"]
-            self.nicknames.append(nickname)
-            self.clients.append(client)
+            try:
+                client, address = self.server.accept()
+                print("Connected with {}".format(str(address)))
+                client.send(pickle.dumps({"msg": 'NICKNAME'}))
+                nickname = pickle.loads(client.recv(1024))["msg"]
+                self.nicknames.append(nickname)
+                self.clients.append(client)
 
-            # get only the IP address for each client, remove the port as it is irrelevant
-            self.clients_address = [client.getpeername()[0] for client in self.clients]
-            self.threadVideoPlay.update_clients(self.clients_address)
-            self.threadAudioPlay.update_clients(self.clients_address)
+                # get only the IP address for each client, remove the port as it is irrelevant
+                self.clients_address = [client.getpeername()[0] for client in self.clients]
+                self.threadVideoPlay.update_clients(self.clients_address)
+                self.threadAudioPlay.update_clients(self.clients_address)
 
-            print("Hello {}!".format(nickname))
-            self.broadcast("{} joined!".format(nickname))
-            client.send(pickle.dumps({"msg": 'Connected to server!'}))
-            thread = threading.Thread(target=self.handle, args=(client,))
-            thread.start()
+                print("Hello {}!".format(nickname))
+                self.chat_box.append("Hello {}!".format(nickname))
+                self.broadcast("{} joined!".format(nickname))
+                client.send(pickle.dumps({"msg": 'Connected to server!'}))
+                thread = threading.Thread(target=self.handle, args=(client,))
+                thread.start()
+            except Exception as e:
+                logging.error('err in receiving messages: {}'.format(e))
 
     def update_threads(self, video_thread, audio_thread):
         self.threadVideoPlay = video_thread
