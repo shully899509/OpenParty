@@ -22,7 +22,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi('open_client.ui', self)
-        self.frame.setScaledContents(True)
+        #self.frame.setScaledContents(True)
         self.setWindowTitle('OpenParty Client')
         self.totalFrames = 0
         self.fps = 0
@@ -44,7 +44,21 @@ class MainWindow(QMainWindow):
         self.process_name = psutil.Process(os.getpid()).name()
         self.volume_set = False
 
+        self.is_fullscreen = False
+
         self.hostAddressBox.setText('127.0.0.1')
+
+
+    def mouseDoubleClickEvent(self, e):  # double click
+        try:
+            if not self.is_fullscreen:
+                self.showFullScreen()
+                self.is_fullscreen = True
+            elif self.is_fullscreen:
+                self.showNormal()
+                self.is_fullscreen = False
+        except Exception as e:
+            logging.error('double click err: {}'.format(e))
 
     def start_all_threads(self):
         if not self.chat_started:

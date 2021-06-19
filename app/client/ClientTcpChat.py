@@ -62,11 +62,15 @@ class TcpChat(QThread):
         try:
             user = self.nickname
             message = self.message_box.text()
+            if len(message) < 1024:
             #self.chat_box.append('{}: {}'.format(self.nickname, self.message_box.text()))
+
+                user_msg = pickle.dumps({"user": user, "msg": message})
+                if self.started:
+                    self.chat_socket.send(user_msg)
+            else:
+                self.chat_box.append("Message was too long. Character limit is 1024")
             self.message_box.setText("")
-            user_msg = pickle.dumps({"user": user, "msg": message})
-            if self.started:
-                self.chat_socket.send(user_msg)
         except Exception as e:
             logging.error('write message err: {}'.format(e))
 

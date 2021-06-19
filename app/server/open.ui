@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1069</width>
-    <height>720</height>
+    <width>1017</width>
+    <height>724</height>
    </rect>
   </property>
   <property name="maximumSize">
@@ -19,35 +19,19 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(80, 80, 80);</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <property name="minimumSize">
     <size>
-     <width>1069</width>
-     <height>669</height>
+     <width>573</width>
+     <height>673</height>
     </size>
    </property>
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0" colspan="4">
-     <widget class="QLabel" name="frame">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="mouseTracking">
-       <bool>false</bool>
-      </property>
-      <property name="autoFillBackground">
-       <bool>false</bool>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>false</bool>
-      </property>
-     </widget>
+     <widget class="QGraphicsView" name="frame"/>
     </item>
     <item row="0" column="4" rowspan="3">
      <widget class="QTextBrowser" name="chatBox">
@@ -72,9 +56,13 @@
         <height>9999</height>
        </size>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
      </widget>
     </item>
-    <item row="0" column="5" rowspan="3">
+    <item row="0" column="5">
      <widget class="QSlider" name="volumeSlider">
       <property name="orientation">
        <enum>Qt::Vertical</enum>
@@ -89,6 +77,10 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
       <property name="text">
        <string>Open File</string>
       </property>
@@ -101,6 +93,10 @@
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
       <property name="text">
        <string>Play</string>
@@ -115,6 +111,10 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
       <property name="text">
        <string>Pause</string>
       </property>
@@ -125,6 +125,10 @@
       <property name="toolTip">
        <string>Current FPS</string>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
       <property name="text">
        <string>FPS</string>
       </property>
@@ -134,6 +138,10 @@
      <widget class="QLabel" name="audioProgressLabel">
       <property name="toolTip">
        <string>Audio Timestamp</string>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
       <property name="text">
        <string>Audio Current / Total</string>
@@ -151,6 +159,10 @@
       <property name="toolTip">
        <string>Video Timestamp</string>
       </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
+      </property>
       <property name="text">
        <string>Current / Total</string>
       </property>
@@ -163,6 +175,10 @@
         <width>141</width>
         <height>16777215</height>
        </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: rgb(255, 255, 255);
+font: 8pt &quot;Lucida Fax&quot;;</string>
       </property>
      </widget>
     </item>
@@ -180,7 +196,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1069</width>
+     <width>1017</width>
      <height>26</height>
     </rect>
    </property>

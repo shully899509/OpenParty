@@ -6,6 +6,7 @@ import threading
 import numpy as np
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer, QThread
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView
 import cv2
 from datetime import timedelta
 import time
@@ -144,7 +145,16 @@ class PlayVideo(QThread):
                 # create QImage from image
                 qImg = QImage(frame.data, width, height, step, QImage.Format_RGB888)
 
-                self.frame.setPixmap(QPixmap.fromImage(qImg))
+                # show image in UI frame label
+                # self.frame.setPixmap(QPixmap.fromImage(qImg))
+                pixmap = QPixmap.fromImage(qImg)
+                pixmap = pixmap.scaled(self.frame.width(), self.frame.height())
+
+                scene = QGraphicsScene()
+                scene.addPixmap(pixmap)
+
+                self.frame.setSceneRect(0, 0, self.frame.width()-10, self.frame.height()-10)
+                self.frame.setScene(scene)
 
                 self.fpsLabel.setText(str(round(self.fps, 1)))
                 if self.cnt == self.frames_to_count:

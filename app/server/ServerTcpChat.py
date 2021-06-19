@@ -62,7 +62,7 @@ class TcpChat(QThread):
                 elif command[:7] == '/skipto':
                     try:
                         frame_nb = int(command[8:])
-                        if frame_nb > self.threadVideoPlay.totalFrames:
+                        if frame_nb > self.threadVideoPlay.totalFrames or frame_nb < 0:
                             raise Exception('invalid frame number selected')
                         video_was_paused = self.threadVideoPlay.is_paused
                         self.threadVideoPlay.stopSignal.emit()

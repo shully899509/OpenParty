@@ -2,6 +2,7 @@ import base64
 import socket
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer, pyqtSignal, QThread
+from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView
 import cv2
 from datetime import timedelta
 import time
@@ -182,9 +183,9 @@ class PlayVideo(QThread):
 
                 # encode frame and send to clients
                 try:
-                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 40])
+                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 30])
                     encoded_frame = base64.b64encode(buffer)
-                    #print(sys.getsizeof(encoded_frame))
+                    # print(sys.getsizeof(encoded_frame))
 
                     # TODO: maybe send total_frames and fps only once in the TCP connection
                     msg_pair = {"frame_nb": current_frame_no,
@@ -210,7 +211,15 @@ class PlayVideo(QThread):
                 qImg = QImage(frame.data, width, height, step, QImage.Format_RGB888)
 
                 # show image in UI frame label
-                self.frame.setPixmap(QPixmap.fromImage(qImg))
+                # self.frame.setPixmap(QPixmap.fromImage(qImg))
+                pixmap = QPixmap.fromImage(qImg)
+                pixmap = pixmap.scaled(self.frame.width(), self.frame.height())
+
+                scene = QGraphicsScene()
+                scene.addPixmap(pixmap)
+
+                self.frame.setSceneRect(0, 0, self.frame.width()-10, self.frame.height()-10)
+                self.frame.setScene(scene)
 
                 # because frame processing time if fluctuating
                 # we need to sync it to the FPS fetched from the metadata

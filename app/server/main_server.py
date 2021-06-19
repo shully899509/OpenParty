@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         loadUi('open.ui', self)
-        self.frame.setScaledContents(True)
+        # self.frame.setScaledContents(True)
         self.setWindowTitle('OpenParty Server')
         self.totalFrames = 0
         self.fps = 0
@@ -49,6 +49,19 @@ class MainWindow(QMainWindow):
         self.session_active = True
         while not self.session_active:
             pass
+
+        self.is_fullscreen = False
+
+    def mouseDoubleClickEvent(self, e):  # double click
+        try:
+            if not self.is_fullscreen:
+                self.showFullScreen()
+                self.is_fullscreen = True
+            elif self.is_fullscreen:
+                self.showNormal()
+                self.is_fullscreen = False
+        except Exception as e:
+            logging.error('double click err: {}'.format(e))
 
     # initialize threads for each component
     def start_video_gen(self):
@@ -78,6 +91,7 @@ class MainWindow(QMainWindow):
 
     # after opening file start threads for each component
     def open_file(self):
+        # self.frame.mouseDoubleClickEvent = mouseDoubleClickEvent
         try:
             self.videoFileName = QFileDialog.getOpenFileName(self, 'Select Video File')
             self.file_name = list(self.videoFileName)[0]
@@ -112,7 +126,7 @@ class MainWindow(QMainWindow):
                 # extract and convert audio from the video file into a temp.wav to be sent
                 # set the bitrate, number of channels, sample size and overwrite old file with same name
                 command = "ffmpeg -i \"{}\" -ab 160k -ac 2 -ar 44100 -vn {} -y".format(self.file_name, 'temp.wav')
-                #os.system(command)
+                # os.system(command)
 
                 self.start_video_gen()
                 self.start_audio()
@@ -150,11 +164,9 @@ class MainWindow(QMainWindow):
             os._exit(1)
 
 
-
-
 # run main component
 app = QApplication(sys.argv)
 widget = MainWindow()
 widget.show()
-#widget.open_file()
+# widget.open_file()
 sys.exit(app.exec_())
