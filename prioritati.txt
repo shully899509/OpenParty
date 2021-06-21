@@ -1,0 +1,26 @@
+(done) 2. trackbar pentru selectare pozitie a videoului
+
+- audio si video decalat (audio inaintea videoului)
+(done) - audio numai de la client (crash cand rulez audio local si client in acelasi timp)
+(done) - trimis comenzi de la client la server (play/pause si pozitie video)
+(done)	-> unele mesaje translatate in comenzi catre server
+
+
+
+(done) - full screen/minimize on double click
+(done) 4. conectare mai multi clienti la server 
+
+
+
+
+
+3. subtitrari
+6. documentatie cod
+
+
+
+
+
+(partially) 5(o). chatbox
+	-> trebuie updatati clientii in real time
+

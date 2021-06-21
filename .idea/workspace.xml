@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="3918bc41-b703-4851-88ba-1abbb975a258" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1rQpsE4qaaL2D9481M68PWKK01b" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../New folder/OpenParty" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\github\OpenParty\app\server" />
+      <recent name="D:\github\OpenParty\main_code\server" />
+      <recent name="D:\github\OpenParty\main_code\server\VideoGen" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.main_client">
+    <configuration name="ServerAudio" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="OpenParty" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/server" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/server/ServerAudio.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ServerVideo" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="OpenParty" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/server" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/server/ServerVideo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="ffpyplayer test (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="OpenParty" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ffpyplayer test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_client" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="OpenParty" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/client" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/client/main_client.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main_server (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="OpenParty" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/server" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/server/main_server.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.ServerAudio" />
+      <item itemvalue="Python.ServerVideo" />
+      <item itemvalue="Python.ffpyplayer test (1)" />
+      <item itemvalue="Python.main_client" />
+      <item itemvalue="Python.main_server (1)" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.main_client" />
+        <item itemvalue="Python.main_server (1)" />
+        <item itemvalue="Python.ServerAudio" />
+        <item itemvalue="Python.ServerVideo" />
+        <item itemvalue="Python.ffpyplayer test (1)" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3918bc41-b703-4851-88ba-1abbb975a258" name="Default Changelist" comment="" />
+      <created>1618918372582</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1618918372582</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="872" y="359" key="#Notifications" timestamp="1622472878304">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="872" y="359" key="#Notifications/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1622472878303" />
+    <state x="999" y="327" key="#audio2" timestamp="1621705374276">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="999" y="327" key="#audio2/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1621705374276" />
+    <state x="734" y="356" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1623087474784">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="734" y="356" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623087474784" />
+    <state x="1010" y="448" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1623087912788">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1010" y="448" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623087912788" />
+    <state x="1035" y="404" key="#xdebugger.evaluate" timestamp="1623107847908">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="1035" y="404" key="#xdebugger.evaluate/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623107847908" />
+    <state x="1059" y="455" key="FileChooserDialogImpl" timestamp="1624296153173">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="-1501" y="455" key="FileChooserDialogImpl/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1624194949590" />
+    <state x="1059" y="455" key="FileChooserDialogImpl/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624296153173" />
+    <state width="2539" height="308" key="GridCell.Tab.0.bottom" timestamp="1623849923202">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923202" />
+    <state width="2539" height="279" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="1419" height="770" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
+    <state width="2539" height="308" key="GridCell.Tab.0.center" timestamp="1623849923201">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923201" />
+    <state width="2539" height="279" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="1419" height="770" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
+    <state width="2539" height="308" key="GridCell.Tab.0.left" timestamp="1623849923201">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923201" />
+    <state width="2539" height="279" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="1419" height="770" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
+    <state width="2539" height="308" key="GridCell.Tab.0.right" timestamp="1623849923201">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923201" />
+    <state width="2539" height="279" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="1419" height="770" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
+    <state width="2539" height="308" key="GridCell.Tab.1.bottom" timestamp="1623849923202">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.1.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923202" />
+    <state width="2539" height="308" key="GridCell.Tab.1.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623827388636" />
+    <state width="2539" height="308" key="GridCell.Tab.1.center" timestamp="1623849923202">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.1.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923202" />
+    <state width="2539" height="308" key="GridCell.Tab.1.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623827388636" />
+    <state width="2539" height="308" key="GridCell.Tab.1.left" timestamp="1623849923202">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.1.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923202" />
+    <state width="2539" height="308" key="GridCell.Tab.1.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623827388636" />
+    <state width="2539" height="308" key="GridCell.Tab.1.right" timestamp="1623849923202">
+      <screen x="-2560" y="0" width="2560" height="1400" />
+    </state>
+    <state width="2539" height="308" key="GridCell.Tab.1.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923202" />
+    <state width="2539" height="308" key="GridCell.Tab.1.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623827388636" />
+    <state x="812" y="239" width="998" height="708" key="SettingsEditor" timestamp="1622446742441">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="812" y="239" width="998" height="708" key="SettingsEditor/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1622446742441" />
+  </component>
+</project>
