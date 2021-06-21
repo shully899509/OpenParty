@@ -157,7 +157,8 @@ class PlayVideo(QThread):
 
 
         except Exception as e:
-            logging.error(e)
+            # logging.error('video: {}'.format(e))
+            pass
 
     def move_progress_bar_client(self, value):
         # timer for video playback is stopped and resumed in Tcp Chat class by the signal
@@ -194,9 +195,9 @@ class PlayVideo(QThread):
 
                 # encode frame and send to clients
                 try:
-                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 30])
+                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
                     encoded_frame = base64.b64encode(buffer)
-                    # print(sys.getsizeof(encoded_frame))
+                    print(sys.getsizeof(encoded_frame))
 
                     # TODO: maybe send total_frames and fps only once in the TCP connection
                     msg_pair = {"frame_nb": current_frame_no,
@@ -211,6 +212,10 @@ class PlayVideo(QThread):
                 except Exception as e:
                     logging.error('video: {}'.format(e))
 
+                import numpy as np
+                dec = base64.b64decode(encoded_frame, ' /')
+                dec = np.fromstring(dec, dtype=np.uint8)
+                frame = cv2.imdecode(dec, 1)
                 # # display frame in player
                 # convert image to RGB format
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -242,7 +247,7 @@ class PlayVideo(QThread):
                     self.frame_freq += 0.001
 
                 # source for sync with fps:
-                # https://pyshine.com/How-to-send-audio-video-of-MP4-using-sockets-in-Python/
+                # https://pyshine.com/Send-video-over-UDP-socket-in-Python
                 # sync with metadata fps
                 if self.cnt == self.frames_to_count:
                     try:

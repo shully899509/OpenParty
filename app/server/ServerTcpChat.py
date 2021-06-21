@@ -48,7 +48,6 @@ class TcpChat(QThread):
                 print('{}: {}'.format(user_msg["user"], command))
                 self.chat_box.append('{}: {}'.format(user_msg["user"], command))
 
-
                 if command == '/play':
                     self.threadVideoPlay.playSignal.emit()
                     self.threadAudioPlay.playSignal.emit()

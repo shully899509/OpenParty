@@ -118,8 +118,9 @@ class LocalAudio(QThread):
             self.data = self.wf.readframes(self.CHUNK)
             current_position = self.wf.tell()
             self.current_second = current_position / self.sample_rate
-            progress = str(timedelta(seconds=(current_position / self.sample_rate))) + ' / ' \
-                       + str(timedelta(seconds=(self.total_frames / self.sample_rate)))
+            total_seconds = self.total_frames / self.sample_rate
+            progress = str(timedelta(seconds=self.current_second)) + ' / ' \
+                       + str(timedelta(seconds=total_seconds))
             self.audioProgressLabel.setText(progress)
 
             # send the audio data by chunks to the list of clients

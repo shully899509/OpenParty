@@ -21,7 +21,6 @@ class TcpChat(QThread):
 
         self.started = False
 
-
     def receive(self):
         while True:  # making valid connection
             try:
@@ -30,11 +29,12 @@ class TcpChat(QThread):
                 if user_msg["msg"] == 'NICKNAME':
                     self.chat_socket.send(pickle.dumps({"msg": self.nickname}))
                 elif user_msg["msg"] != "":
-                    print(user_msg["msg"])  # received in bytes
+                    print(user_msg["msg"])
                     self.chat_box.append(user_msg["msg"])
                     pass
             except Exception as e:  # case on wrong ip/port details
-                logging.error('err on receive message: {}'.format(e))
+                logging.info('Ended connection with server')
+                # logging.error(e)
                 self.chat_socket.close()
                 break
 
