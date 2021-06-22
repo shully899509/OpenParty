@@ -195,9 +195,11 @@ class PlayVideo(QThread):
 
                 # encode frame and send to clients
                 try:
-                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])
                     encoded_frame = base64.b64encode(buffer)
-                    print(sys.getsizeof(encoded_frame))
+
+                    # luk
+                    # print(sys.getsizeof(encoded_frame))
 
                     # TODO: maybe send total_frames and fps only once in the TCP connection
                     msg_pair = {"frame_nb": current_frame_no,
@@ -206,16 +208,22 @@ class PlayVideo(QThread):
                                 "fps": self.fps_metadata}
                     packed_message = pickle.dumps(msg_pair)
 
+                    msg_size = sys.getsizeof(packed_message)
+                    if msg_size > 63000: print(msg_size)
+
                     # print(self.clients)
                     for client in self.clients:
                         self.video_socket.sendto(packed_message, (client, self.client_port))
                 except Exception as e:
                     logging.error('video: {}'.format(e))
 
-                import numpy as np
-                dec = base64.b64decode(encoded_frame, ' /')
-                dec = np.fromstring(dec, dtype=np.uint8)
-                frame = cv2.imdecode(dec, 1)
+                # luk
+                # import numpy as np
+                # dec = base64.b64decode(encoded_frame, ' /')
+                # dec = np.fromstring(dec, dtype=np.uint8)
+                # frame = cv2.imdecode(dec, 1)
+
+
                 # # display frame in player
                 # convert image to RGB format
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)

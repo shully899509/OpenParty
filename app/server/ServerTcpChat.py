@@ -28,6 +28,7 @@ class TcpChat(QThread):
 
         self.chat_box = chat_box
         self.message_box = message_box
+        self.message_box.returnPressed.connect(self.write)
 
         print(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
         self.chat_box.append(f'Listening for TCP chat connections on {self.IP}:{self.PORT}...')
@@ -37,30 +38,43 @@ class TcpChat(QThread):
         for client in self.clients:
             client.send(msg)
 
+    # server messages on chat box
+    def write(self):
+        try:
+            message = self.message_box.text()
+            if len(message) < 1024:
+                if self.started:
+                    self.chat_box.append('server: {}'.format(message))
+                    self.broadcast('server: {}'.format(message))
+            else:
+                self.chat_box.append("Message was too long. Character limit is 1024")
+            self.message_box.setText("")
+        except Exception as e:
+            logging.error('write message err: {}'.format(e))
 
     def handle(self, client):
         while True:
             try:  # recieving valid messages from client
                 user_msg = pickle.loads(client.recv(1024))
-                command = user_msg["msg"]
-                if command not in ['/play', '/pause'] and command[:7] != '/skipto':
-                    self.broadcast('{}: {}'.format(user_msg["user"], command))
-                print('{}: {}'.format(user_msg["user"], command))
-                self.chat_box.append('{}: {}'.format(user_msg["user"], command))
+                client_message = user_msg["msg"]
+                if client_message not in ['/play', '/pause'] and client_message[:7] != '/skipto':
+                    self.broadcast('{}: {}'.format(user_msg["user"], client_message))
+                print('{}: {}'.format(user_msg["user"], client_message))
+                self.chat_box.append('{}: {}'.format(user_msg["user"], client_message))
 
-                if command == '/play':
+                if client_message == '/play':
                     self.threadVideoPlay.playSignal.emit()
                     self.threadAudioPlay.playSignal.emit()
                     if self.threadVideoPlay.is_paused:
                         self.broadcast('{} resumed playback'.format(user_msg["user"]))
-                elif command == '/pause':
+                elif client_message == '/pause':
                     self.threadVideoPlay.stopSignal.emit()
                     self.threadAudioPlay.stopSignal.emit()
                     if not self.threadVideoPlay.is_paused:
                         self.broadcast('{} stopped playback'.format(user_msg["user"]))
-                elif command[:7] == '/skipto':
+                elif client_message[:7] == '/skipto':
                     try:
-                        frame_nb = int(command[8:])
+                        frame_nb = int(client_message[8:])
                         if frame_nb > self.threadVideoPlay.totalFrames - 10 or frame_nb < 0:
                             raise Exception('invalid frame number selected')
                         video_was_paused = self.threadVideoPlay.is_paused
