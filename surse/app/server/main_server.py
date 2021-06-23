@@ -1,8 +1,3 @@
-# DONE: (needs sync) send audio packets through UDP socket and sync with video
-# DONE: move code into separate .py files for each module
-# DONE: replace send frames to hardcoded client addresses with list of addresses from chat TCP connection
-# DONE: fix crash when trying to open another video
-# DONE: fix TCP chat so it updates all clients when receiving message
 import sys
 
 from PyQt5.uic import loadUi

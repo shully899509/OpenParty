@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="3918bc41-b703-4851-88ba-1abbb975a258" name="Default Changelist" comment="" />
+    <list default="true" id="3918bc41-b703-4851-88ba-1abbb975a258" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/OpenParty.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/OpenParty.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/server/ServerVideo.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/server/ServerVideo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/server/main_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/server/main_server.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -39,7 +44,7 @@
       <recent name="D:\github\OpenParty\main_code\server\VideoGen" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main_client">
+  <component name="RunManager" selected="Python.main_server">
     <configuration name="ServerAudio" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="OpenParty" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -124,18 +129,18 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="main_server (1)" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="OpenParty" />
+    <configuration name="main_server" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="" />
+      <option name="SDK_HOME" value="D:\github\OpenParty\venv3\Scripts\python.exe" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/app/server" />
-      <option name="IS_MODULE_SDK" value="true" />
+      <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/app/server/main_server.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -150,12 +155,12 @@
       <item itemvalue="Python.ServerVideo" />
       <item itemvalue="Python.ffpyplayer test (1)" />
       <item itemvalue="Python.main_client" />
-      <item itemvalue="Python.main_server (1)" />
+      <item itemvalue="Python.main_server" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.main_server" />
         <item itemvalue="Python.main_client" />
-        <item itemvalue="Python.main_server (1)" />
         <item itemvalue="Python.ServerAudio" />
         <item itemvalue="Python.ServerVideo" />
         <item itemvalue="Python.ffpyplayer test (1)" />
@@ -187,14 +192,18 @@
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="999" y="327" key="#audio2/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1621705374276" />
-    <state x="734" y="356" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1623087474784">
+    <state x="734" y="356" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1624298565955">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
-    <state x="734" y="356" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623087474784" />
+    <state x="734" y="356" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624298565955" />
     <state x="1010" y="448" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1623087912788">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state x="1010" y="448" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623087912788" />
+    <state x="999" y="298" key="#main_server_(1)" timestamp="1624298530959">
+      <screen x="0" y="0" width="2560" height="1400" />
+    </state>
+    <state x="999" y="298" key="#main_server_(1)/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624298530959" />
     <state x="1035" y="404" key="#xdebugger.evaluate" timestamp="1623107847908">
       <screen x="0" y="0" width="2560" height="1400" />
     </state>
@@ -204,29 +213,29 @@
     </state>
     <state x="-1501" y="455" key="FileChooserDialogImpl/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1624194949590" />
     <state x="1059" y="455" key="FileChooserDialogImpl/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624296153173" />
-    <state width="2539" height="308" key="GridCell.Tab.0.bottom" timestamp="1623849923202">
-      <screen x="-2560" y="0" width="2560" height="1400" />
+    <state width="2539" height="279" key="GridCell.Tab.0.bottom" timestamp="1624312300388">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="308" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923202" />
-    <state width="2539" height="279" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="2539" height="279" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624312300388" />
     <state width="1419" height="770" key="GridCell.Tab.0.bottom/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
-    <state width="2539" height="308" key="GridCell.Tab.0.center" timestamp="1623849923201">
-      <screen x="-2560" y="0" width="2560" height="1400" />
+    <state width="2539" height="279" key="GridCell.Tab.0.center" timestamp="1624312300388">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="308" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923201" />
-    <state width="2539" height="279" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="2539" height="279" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624312300388" />
     <state width="1419" height="770" key="GridCell.Tab.0.center/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
-    <state width="2539" height="308" key="GridCell.Tab.0.left" timestamp="1623849923201">
-      <screen x="-2560" y="0" width="2560" height="1400" />
+    <state width="2539" height="279" key="GridCell.Tab.0.left" timestamp="1624312300388">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="308" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923201" />
-    <state width="2539" height="279" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="2539" height="279" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624312300388" />
     <state width="1419" height="770" key="GridCell.Tab.0.left/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
-    <state width="2539" height="308" key="GridCell.Tab.0.right" timestamp="1623849923201">
-      <screen x="-2560" y="0" width="2560" height="1400" />
+    <state width="2539" height="279" key="GridCell.Tab.0.right" timestamp="1624312300388">
+      <screen x="0" y="0" width="2560" height="1400" />
     </state>
     <state width="2539" height="308" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@-2560.0.2560.1400" timestamp="1623849923201" />
-    <state width="2539" height="279" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1623834617111" />
+    <state width="2539" height="279" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@0.0.2560.1400" timestamp="1624312300388" />
     <state width="1419" height="770" key="GridCell.Tab.0.right/0.0.2560.1400/-2560.0.2560.1400/2560.-1127.1440.2520@2560.-1127.1440.2520" timestamp="1619856432022" />
     <state width="2539" height="308" key="GridCell.Tab.1.bottom" timestamp="1623849923202">
       <screen x="-2560" y="0" width="2560" height="1400" />
