@@ -15,6 +15,7 @@ class TcpChat(QThread):
 
         self.host_name = socket.gethostname()
         self.IP = socket.gethostbyname(self.host_name)
+        #self.IP = '92.81.39.98'
         # self.IP = '127.0.0.1'
         self.PORT = 7976  # Choosing unreserved port
 

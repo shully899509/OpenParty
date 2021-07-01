@@ -49,6 +49,7 @@ class PlayVideo(QThread):
 
         self.host_name = socket.gethostname()
         self.host_ip = socket.gethostbyname(self.host_name)
+        print('video ip listening at: ' + self.host_ip)
         # self.host_ip = '127.0.0.1'
         self.port = 9689
         self.socket_address = (self.host_ip, self.port)  # client ip

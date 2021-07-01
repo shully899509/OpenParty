@@ -16,6 +16,7 @@ path = BASE_DIR.replace('\\'[0], '/')
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
+SECONDS_TO_MS = 1000
 
 class PlayVideo(QThread):
     playSignal = pyqtSignal()
@@ -117,7 +118,7 @@ class PlayVideo(QThread):
     # restart the timer when play button is pressed
     def play_timer(self):
         try:
-            self.timer.start(self.frame_freq * 1000)
+            self.timer.start(self.frame_freq * SECONDS_TO_MS)
             self.is_paused = False
         except Exception as e:
             logging.error('timer start err: {}'.format(e))
@@ -153,7 +154,7 @@ class PlayVideo(QThread):
                 self.threadVideoGen.stop_q = False
                 self.slider_pressed = False
                 if not self.is_paused:
-                    self.timer.start(self.frame_freq * 1000)
+                    self.timer.start(self.frame_freq * SECONDS_TO_MS)
 
 
         except Exception as e:
@@ -195,9 +196,11 @@ class PlayVideo(QThread):
 
                 # encode frame and send to clients
                 try:
-                    encoded, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+                    _, buffer = cv2.imencode('.jpeg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
                     encoded_frame = base64.b64encode(buffer)
 
+                    # print(buffer)
+                    # print(encoded_frame)
                     # luk
                     # print(sys.getsizeof(encoded_frame))
 
@@ -214,6 +217,7 @@ class PlayVideo(QThread):
                     # print(self.clients)
                     for client in self.clients:
                         self.video_socket.sendto(packed_message, (client, self.client_port))
+                        # print(client)
                 except Exception as e:
                     logging.error('video: {}'.format(e))
 
@@ -269,7 +273,7 @@ class PlayVideo(QThread):
                         else:
                             pass
                     except Exception as e:
-                        print(e)
+                        logging.error(e)
                 self.cnt += 1
 
                 # print(self.fps_metadata, self.fps_actual)
@@ -277,7 +281,7 @@ class PlayVideo(QThread):
                 self.fpsLabel.setText(str(round(self.fps_actual, 1)))
 
                 # restart and update timer with new frame frequency
-                self.timer.start(self.frame_freq * 1000)
+                self.timer.start(self.frame_freq * SECONDS_TO_MS)
 
                 # restart playback at end of video and pause
                 if current_frame_no >= self.totalFrames - 5:

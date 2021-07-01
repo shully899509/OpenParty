@@ -10,6 +10,7 @@ path = BASE_DIR.replace('\\'[0], '/')
 
 logging.basicConfig(format="%(message)s", level=logging.INFO)
 
+SECONDS_TO_MS = 1000
 
 class LocalAudio(QThread):
     playSignal = pyqtSignal()
@@ -84,7 +85,7 @@ class LocalAudio(QThread):
 
     # restart the timer when play button is pressed
     def play_timer(self):
-        self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
+        self.timer.start(SECONDS_TO_MS * 0.8 * self.CHUNK / self.sample_rate)
         self.is_paused = False
 
     # stop the timer when pause button is pressed
@@ -100,7 +101,7 @@ class LocalAudio(QThread):
                 self.timer.stop()
                 self.wf.setpos(position)
                 if not self.is_paused:
-                    self.timer.start(1000 * 0.8 * self.CHUNK / self.sample_rate)
+                    self.timer.start(SECONDS_TO_MS * 0.8 * self.CHUNK / self.sample_rate)
                 # print('skipped to ', (value/25))
         except Exception as e:
             logging.error('error progress bar set audio: {}'.format(e))
